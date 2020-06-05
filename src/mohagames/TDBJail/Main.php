@@ -6,6 +6,7 @@ namespace mohagames\TDBJail;
 
 use mohagames\TDBJail\event\EventListener;
 use mohagames\TDBJail\jail\JailController;
+use mohagames\TDBJail\util\Helper;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\item\ItemFactory;
@@ -47,7 +48,7 @@ class Main extends PluginBase {
         $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
 
         self::$db = new \SQLite3($this->getDataFolder() . "Jail.db");
-        self::$db->query("CREATE TABLE IF NOT EXISTS jails(jail_id INTEGER PRIMARY KEY AUTO_INCREMENT NOT NULL, jail_name TEXT, jail_bb TEXT, jail_level TEXT, jail_spawn TEXT, jail_members TEXT)");
+        self::$db->query("CREATE TABLE IF NOT EXISTS jails(jail_id INTEGER PRIMARY KEY AUTOINCREMENT, jail_name TEXT, jail_bb TEXT, jail_level TEXT, jail_spawn TEXT, jail_members TEXT)");
 
         $config = new Config($this->getDataFolder() . "config.yml", Config::YAML, ["item_id" => ItemIds::GOLD_AXE, "lore" => "§cJailCreator"]);
         $config->save();
@@ -88,12 +89,6 @@ class Main extends PluginBase {
                         return true;
                     }
 
-                    if(!isset(self::$spawnPos[$sender->getName()]))
-                    {
-                        $sender->sendMessage("§f[§cTDBJail§f] §cU moet een spawnlocactie instellen met §4/jail setspawn§c.");
-                        return true;
-                    }
-
                     if(!isset($args[1]))
                     {
                         $sender->sendMessage("§f[§cTDBJail§f] §cGelieve een jailnaam in te geven.");
@@ -106,30 +101,94 @@ class Main extends PluginBase {
                     $boundingBox = new AxisAlignedBB(min($pos1->getX(), $pos2->getX()), min($pos1->getY(), $pos2->getY()), min($pos1->getZ(), $pos2->getZ()), max($pos1->getX(), $pos2->getX()), max($pos1->getY(), $pos2->getY()), max($pos1->getZ(), $pos2->getZ()));
                     $jailName = $args[1];
 
-                    JailController::createJail($jailName, $boundingBox, $sender->getLevel(), $spawn);
+                    JailController::createJail($jailName, $boundingBox, $sender->getLevel());
 
-
+                    $sender->sendMessage("§f[§cTDBJail§f] §aDe jail is succesvol aangemaakt, gelieve een spawnplek in te stellen!");
                     break;
 
                 case "add":
+                    $jail = JailController::getJailAtPosition($sender);
+                    if(is_null($jail))
+                    {
+                        $sender->sendMessage("§f[§cTDBJail§f] §cU staat niet in een cel");
+                        return true;
+                    }
+
+                    if(!isset($args[1]))
+                    {
+                        $sender->sendMessage("§f[§cTDBJail§f] §cGelieve de naam van de speler die u wilt toevoegen op te geven!");
+                        return true;
+                    }
+
+                    if(!Helper::playerExists($args[1]))
+                    {
+                        $sender->sendMessage("§f[§cTDBJail§f] §cDeze speler bestaat niet.");
+                    }
+
+                    if($jail->isJailed($args[1]))
+                    {
+                        $sender->sendMessage("§f[§cTDBJail§f] §cDeze speler is al toegevoegd.");
+                        return true;
+                    }
+
+                    if($jail->addMember($args[1]))
+                    {
+                        $sender->sendMessage("§f[§cTDBJail§f] §aDe speler is succesvol toegevoegd!");
+                        return true;
+                    }
+
+                    $sender->sendMessage("§f[§cTDBJail§f] §cEr is iets misgelopen!");
 
                     break;
 
                 case "remove":
+                    $jail = JailController::getJailAtPosition($sender);
+                    if(is_null($jail))
+                    {
+                        $sender->sendMessage("§f[§cTDBJail§f] §cU staat niet in een cel");
+                        return true;
+                    }
+
+                    if(!isset($args[1]))
+                    {
+                        $sender->sendMessage("§f[§cTDBJail§f] §cGelieve de naam van de speler die u wilt toevoegen op te geven!");
+                        return true;
+                    }
+
+                    if(!Helper::playerExists($args[1]))
+                    {
+                        $sender->sendMessage("§f[§cTDBJail§f] §cDeze speler bestaat niet.");
+                    }
+
+                    if(!$jail->isJailed($args[1]))
+                    {
+                        $sender->sendMessage("§f[§cTDBJail§f] §cDeze speler is al toegevoegd.");
+                        return true;
+                    }
+
+                    if($jail->removeMember($args[1]))
+                    {
+                        $sender->sendMessage("§f[§cTDBJail§f] §aDe speler is succesvol toegevoegd!");
+                        return true;
+                    }
+
+                    $sender->sendMessage("§f[§cTDBJail§f] §cEr is iets misgelopen!");
 
                     break;
 
                 case "setspawn":
+                    $jail =  JailController::getJailAtPosition($sender);
+                    if(is_null($jail))
+                    {
+                        $sender->sendMessage("§f[§cTDBJail§f] §cU staat niet in een cel");
+                        return true;
+                    }
 
-
-
+                    $jail->setSpawn($sender);
+                    $sender->sendMessage("§f[§cTDBJail§f] §aDe spawn is succesvol ingesteld op uw locatie.");
                     break;
-
-
                 default:
                     return false;
-
-
             }
             return false;
         }
