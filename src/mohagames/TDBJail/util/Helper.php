@@ -30,5 +30,21 @@ class Helper
         return [$vector3->getX(), $vector3->getY(), $vector3->getZ()];
     }
 
+    /**
+     * Deze method checkts als de gegeven speler ooit de server heeft gejoined.
+     *
+     * @param string $playername
+     * @return bool
+     */
+    public static function playerExists(?string $playername)
+    {
+        if (!is_null($playername)) {
+            $playername = strtolower($playername);
+            return file_exists("players/$playername.dat");
+        }
+        return false;
+
+    }
+
 
 }
