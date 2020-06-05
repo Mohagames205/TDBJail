@@ -2,6 +2,7 @@
 
 namespace mohagames\TDBJail\jail;
 
+use mohagames\PlotArea\utils\Member;
 use mohagames\TDBJail\Main;
 use mohagames\TDBJail\util\Helper;
 use pocketmine\level\Level;
@@ -54,7 +55,7 @@ class Jail {
     {
         $bb = $this->boundingBox;
 
-        $defaultSpawn = Helper::arrayToVector([($bb->maxX - $bb->minX)/2,$bb->minY, ($bb->maxZ - $bb->minZ)/2]);
+        $defaultSpawn = Helper::arrayToVector([($bb->maxX + $bb->minX)/2,$bb->minY + 1, ($bb->maxZ + $bb->minZ)/2]);
 
         return $this->spawn ?? $defaultSpawn;
     }
@@ -82,18 +83,54 @@ class Jail {
 
     public function delete() : void
     {
+        $id = $this->getId();
 
+        $stmt = Main::getDb()->prepare("DELETE FROM jails WHERE jail_id = :id");
+        $stmt->bindParam("id", $id);
+        $stmt->execute();
+        $stmt->close();
     }
 
-    public function addMember(string $member)
+    public function addMember(string $member) : bool
     {
+        $members = $this->getMembers();
+        if(!$this->isJailed($member))
+        {
+            if(Helper::playerExists($member))
+            {
+                $id = $this->getId();
+                $members[] = strtolower($member);
+                $members = json_encode($members);
+                $stmt = Main::getDb()->prepare("UPDATE jails SET jail_members = :members WHERE jail_id = :id");
+                $stmt->bindParam("members", $members);
+                $stmt->bindParam("id", $id);
+                $stmt->execute();
 
+                return true;
+            }
+        }
+        return false;
 
     }
 
     public function removeMember(string $member)
     {
+        $members = $this->getMembers();
+        if($this->isJailed($member))
+        {
+            if(Helper::playerExists($member))
+            {
+                $id = $this->getId();
+                unset($members[$member]);
+                $stmt = Main::getDb()->prepare("UPDATE jails SET jail_members = :members WHERE jail_id = :id");
+                $stmt->bindParam("members", $members);
+                $stmt->bindParam("id", $id);
+                $stmt->execute();
 
+                return true;
+            }
+        }
+        return false;
 
     }
 
@@ -122,6 +159,8 @@ class Jail {
      */
     public function getId() : int
     {
+        $name = $this->name;
+
         $stmt = Main::getDb()->prepare("SELECT jail_id FROM jails WHERE lower(jail_name) = lower(:jail_name)");
         $stmt->bindParam("jail_name", $name);
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
