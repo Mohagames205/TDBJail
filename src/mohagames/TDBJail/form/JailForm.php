@@ -6,6 +6,7 @@ namespace mohagames\TDBJail\form;
 
 use jojoe77777\FormAPI\CustomForm;
 use mohagames\TDBJail\jail\Jail;
+use mohagames\TDBJail\jail\JailController;
 use mohagames\TDBJail\util\Helper;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -43,7 +44,7 @@ class JailForm
                 return;
             }
 
-            if($jail->isJailed($target))
+            if(!is_null(JailController::getJailByMember($target)) || $jail->isJailed($target))
             {
                 if(!is_null($jailedPlayer)) $jailedPlayer->teleport($jail->getSpawn());
 
