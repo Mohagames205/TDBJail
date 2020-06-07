@@ -33,17 +33,17 @@ class Jail {
     private $spawn;
 
     /**
-     * @var array
+     * @var string
      */
-    private $members;
+    private $member;
 
-    public function __construct(string $name, AxisAlignedBB $boundingBox, Level $level, ?Vector3 $spawn = null, array $members = [])
+    public function __construct(string $name, AxisAlignedBB $boundingBox, Level $level, ?Vector3 $spawn = null, string $member = null)
     {
         $this->name = $name;
         $this->boundingBox = $boundingBox;
         $this->level = $level;
         $this->spawn = $spawn;
-        $this->members = $members;
+        $this->member = $member;
     }
 
     public function getBoundingBox() : AxisAlignedBB
@@ -60,9 +60,13 @@ class Jail {
         return $this->spawn ?? $defaultSpawn;
     }
 
+    public function getName() : string
+    {
+        return $this->name;
+    }
+
     public function setSpawn(Vector3 $spawn) : void
     {
-
         $id = $this->getId();
         $encodedSpawn = json_encode(Helper::vectorToArray($spawn));
         //db query
@@ -73,7 +77,6 @@ class Jail {
         $stmt->close();
 
         $this->spawn = $spawn;
-
     }
 
     public function getLevel() : Level
@@ -91,65 +94,82 @@ class Jail {
         $stmt->close();
     }
 
-    public function addMember(string $member) : bool
+    public function setTime(int $time)
     {
-        $members = $this->getMembers();
+        $id = $this->getId();
+
+        $stmt = Main::getDb()->prepare("UPDATE jails SET jail_time = :time WHERE jail_id = :jail_id");
+        $stmt->bindParam("time", $time);
+        $stmt->bindParam("jail_id", $id);
+        $stmt->execute();
+        $stmt->close();
+    }
+
+    public function setMember(string $member, int $time) : bool
+    {
         if(!$this->isJailed($member))
         {
             if(Helper::playerExists($member))
             {
+                $this->member = strtolower($member);
+
                 $id = $this->getId();
-                $members[] = strtolower($member);
-                $members = json_encode($members);
-                $stmt = Main::getDb()->prepare("UPDATE jails SET jail_members = :members WHERE jail_id = :id");
-                $stmt->bindParam("members", $members);
+                $stmt = Main::getDb()->prepare("UPDATE jails SET jail_member = lower(:member) WHERE jail_id = :id");
+                $stmt->bindParam("member", $member);
                 $stmt->bindParam("id", $id);
                 $stmt->execute();
 
+                $this->setTime($time);
                 return true;
             }
         }
         return false;
-
     }
 
-    public function removeMember(string $member)
+    public function deleteMember()
     {
-        $members = $this->getMembers();
-        if($this->isJailed($member))
-        {
-            if(Helper::playerExists($member))
-            {
-                $id = $this->getId();
-                unset($members[$member]);
-                $stmt = Main::getDb()->prepare("UPDATE jails SET jail_members = :members WHERE jail_id = :id");
-                $stmt->bindParam("members", $members);
-                $stmt->bindParam("id", $id);
-                $stmt->execute();
+        $id = $this->getId();
+        $this->member = null;
+        $stmt = Main::getDb()->prepare("UPDATE jails SET jail_member = NULL WHERE jail_id = :jail_id");
+        $stmt->bindParam("jail_id", $id);
+        $stmt->execute();
+        $stmt->close();
 
-                return true;
-            }
-        }
-        return false;
+        return true;
+    }
 
+    public function getRemainingTime()
+    {
+        $id = $this->getId();
+
+        $stmt = Main::getDb()->prepare("SELECT jail_time FROM jails WHERE jail_id = :id");
+        $stmt->bindParam("id", $id);
+        $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
+
+        return $res["jail_time"];
+    }
+
+    public function hasTimePassed() : bool
+    {
+        return $this->getRemainingTime() <= time();
     }
 
     public function isJailed(string $member) : bool
     {
-        return in_array(strtolower($member), $this->getMembers());
+        return strtolower($member) == $this->getMember();
     }
 
 
-    public function getMembers() : array
+    public function getMember() : ?string
     {
         $id = $this->getId();
 
-        $stmt = Main::getDb()->prepare("SELECT jail_members FROM jails WHERE jail_id = :jail_id");
+        $stmt = Main::getDb()->prepare("SELECT jail_member FROM jails WHERE jail_id");
         $stmt->bindParam("jail_id", $id);
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
-        $stmt->close();
 
-        return json_decode($res["jail_members"], true);
+        return $res["jail_member"];
+
     }
 
     /**
