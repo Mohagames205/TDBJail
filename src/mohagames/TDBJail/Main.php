@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace mohagames\TDBJail;
 
 use mohagames\TDBJail\event\EventListener;
+use mohagames\TDBJail\form\JailForm;
 use mohagames\TDBJail\jail\JailController;
+use mohagames\TDBJail\task\CheckJailedPlayerTask;
 use mohagames\TDBJail\util\Helper;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
@@ -48,10 +50,12 @@ class Main extends PluginBase {
         $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
 
         self::$db = new \SQLite3($this->getDataFolder() . "Jail.db");
-        self::$db->query("CREATE TABLE IF NOT EXISTS jails(jail_id INTEGER PRIMARY KEY AUTOINCREMENT, jail_name TEXT, jail_bb TEXT, jail_level TEXT, jail_spawn TEXT, jail_members TEXT)");
+        self::$db->query("CREATE TABLE IF NOT EXISTS jails(jail_id INTEGER PRIMARY KEY AUTOINCREMENT, jail_name TEXT, jail_bb TEXT, jail_level TEXT, jail_spawn TEXT, jail_member TEXT, jail_time TEXT)");
 
         $config = new Config($this->getDataFolder() . "config.yml", Config::YAML, ["item_id" => ItemIds::GOLD_AXE, "lore" => "§cJailCreator"]);
         $config->save();
+
+        $this->getScheduler()->scheduleDelayedRepeatingTask(new CheckJailedPlayerTask(), 20 * 5, 20 * 5);
 
         self::$instance = $this;
     }
@@ -69,6 +73,21 @@ class Main extends PluginBase {
 
             switch($args[0])
             {
+
+                case "info":
+                    $jail = JailController::getJailAtPosition($sender);
+                    if(is_null($jail))
+                    {
+                        $sender->sendMessage("§f[§cTDBJail§f] §cU staat niet in een cel");
+                        return true;
+                    }
+
+                    $jailName = $jail->getName();
+                    $member = $jail->getMember() ?? "Geen gevangene";
+
+                    $sender->sendMessage("§f---§cJail Info§f---\n§cNaam: §4$jailName\n§cGevangene: §4$member");
+
+                    break;
                 case "wand":
                     $config = $this->getConfig()->getAll();
                     $item_id = $config["item_id"];
@@ -113,32 +132,7 @@ class Main extends PluginBase {
                         $sender->sendMessage("§f[§cTDBJail§f] §cU staat niet in een cel");
                         return true;
                     }
-
-                    if(!isset($args[1]))
-                    {
-                        $sender->sendMessage("§f[§cTDBJail§f] §cGelieve de naam van de speler die u wilt toevoegen op te geven!");
-                        return true;
-                    }
-
-                    if(!Helper::playerExists($args[1]))
-                    {
-                        $sender->sendMessage("§f[§cTDBJail§f] §cDeze speler bestaat niet.");
-                    }
-
-                    if($jail->isJailed($args[1]))
-                    {
-                        $sender->sendMessage("§f[§cTDBJail§f] §cDeze speler is al toegevoegd.");
-                        return true;
-                    }
-
-                    if($jail->addMember($args[1]))
-                    {
-                        $sender->sendMessage("§f[§cTDBJail§f] §aDe speler is succesvol toegevoegd!");
-                        return true;
-                    }
-
-                    $sender->sendMessage("§f[§cTDBJail§f] §cEr is iets misgelopen!");
-
+                    JailForm::openTbanUI($sender, $jail);
                     break;
 
                 case "remove":
@@ -162,13 +156,13 @@ class Main extends PluginBase {
 
                     if(!$jail->isJailed($args[1]))
                     {
-                        $sender->sendMessage("§f[§cTDBJail§f] §cDeze speler is al toegevoegd.");
+                        $sender->sendMessage("§f[§cTDBJail§f] §cDeze speler is niet gejailed");
                         return true;
                     }
 
-                    if($jail->removeMember($args[1]))
+                    if($jail->deleteMember())
                     {
-                        $sender->sendMessage("§f[§cTDBJail§f] §aDe speler is succesvol toegevoegd!");
+                        $sender->sendMessage("§f[§cTDBJail§f] §aDe speler is succesvol vrij gelaten");
                         return true;
                     }
 
@@ -192,8 +186,6 @@ class Main extends PluginBase {
             }
             return false;
         }
-
-
     }
 
     public static function getDb() : \SQLite3
