@@ -11,6 +11,7 @@ use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerMoveEvent;
+use pocketmine\event\player\PlayerQuitEvent;
 
 class EventListener implements Listener
 {
@@ -25,7 +26,6 @@ class EventListener implements Listener
 
             $player->sendMessage("§f[§cTDBJail§f] §aEerste locatie geselecteerd");
         }
-
     }
 
     public function onSecondPosition(PlayerInteractEvent $e)
@@ -47,7 +47,7 @@ class EventListener implements Listener
 
     public function onDeath(PlayerDeathEvent $e)
     {
-        $jail = JailController::isJailed($e->getPlayer()->getName());
+        $jail = JailController::getJailByMember($e->getPlayer()->getName());
         if(!is_null($jail))
         {
             $e->getPlayer()->teleport($jail->getSpawn());
@@ -56,29 +56,17 @@ class EventListener implements Listener
 
     public function onJoin(PlayerJoinEvent $e)
     {
-        $jail = JailController::isJailed($e->getPlayer()->getName());
+        $jail = JailController::getJailByMember($e->getPlayer()->getName());
         if(!is_null($jail))
         {
             $playerJail = JailController::getJailAtPosition($e->getPlayer());
-            if(is_null($playerJail) || $playerJail->getId() != $jail)
+            if(is_null($playerJail) || $playerJail->getId() != $jail->getId())
             {
                 $e->getPlayer()->teleport($jail->getSpawn());
             }
         }
     }
 
-    public function onMove(PlayerMoveEvent $e)
-    {
-        $jail = JailController::isJailed($e->getPlayer()->getName());
-        if(!is_null($jail))
-        {
-            $playerJail = JailController::getJailAtPosition($e->getPlayer());
-            if(is_null($playerJail) || $playerJail->getId() != $jail)
-            {
-                $e->getPlayer()->teleport($jail->getSpawn());
-            }
-        }
-    }
 
 
 
