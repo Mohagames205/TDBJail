@@ -13,6 +13,8 @@ use pocketmine\Server;
 
 class JailController {
 
+    public static $jailedPlayers = [];
+
     /**
      * @param Position $location
      * @return Jail|null
@@ -24,7 +26,7 @@ class JailController {
         foreach (self::getJails() as $jail)
         {
             $bb = $jail->getBoundingBox();
-            if($bb->isVectorInside($newPosition) && $jail->getLevel()->getFolderName() == $jail->getLevel()->getFolderName()) return $jail;
+            if($bb->isVectorInside($newPosition) && ($jail->getLevel()->getFolderName() == $jail->getLevel()->getFolderName())) return $jail;
         }
         return null;
     }
@@ -43,12 +45,12 @@ class JailController {
         $spawn = !is_null($spawn) ? Helper::vectorToArray($spawn) : null;
         $members = json_encode($members);
 
-        $stmt = Main::getDb()->prepare("INSERT INTO jails (jail_name, jail_bb, jail_level, jail_spawn, jail_members) values(:name, :bb, :level, :spawn, :members)");
+        $stmt = Main::getDb()->prepare("INSERT INTO jails (jail_name, jail_bb, jail_level, jail_spawn, jail_member) values(:name, :bb, :level, :spawn, :member)");
         $stmt->bindParam("name", $name);
         $stmt->bindParam("bb", $axisAlignedBB);
         $stmt->bindParam("level", $levelName);
         $stmt->bindParam("spawn", $spawn);
-        $stmt->bindParam("members", $members);
+        $stmt->bindParam("member", $members);
         $stmt->execute();
         $stmt->close();
     }
@@ -66,25 +68,27 @@ class JailController {
         if(!$res) return null;
         $spawn = !is_null(json_decode($res["jail_spawn"], true)) ? Helper::arrayToVector(json_decode($res["jail_spawn"], true)) : null;
 
-         return new Jail($res["jail_name"], unserialize($res["jail_bb"]), Server::getInstance()->getLevelByName($res["jail_level"]), $spawn, json_decode($res["jail_members"], true));
+         return new Jail($res["jail_name"], unserialize($res["jail_bb"]), Server::getInstance()->getLevelByName($res["jail_level"]), $spawn, $res["jail_member"]);
     }
 
     public static function getJailByName(string $name) : ?Jail
     {
         $stmt = Main::getDb()->prepare("SELECT * FROM jails WHERE lower(jail_name) = lower(:name)");
         $stmt->bindParam("name", $name);
+
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
 
         if(!$res) return null;
+
         $spawn = !is_null(json_decode($res["jail_spawn"], true)) ? Helper::arrayToVector(json_decode($res["jail_spawn"], true)) : null;
-        return new Jail($res["jail_name"], unserialize($res["jail_bb"]), Server::getInstance()->getLevelByName($res["jail_level"]), $spawn, json_decode($res["jail_members"], true));
+        return new Jail($res["jail_name"], unserialize($res["jail_bb"]), Server::getInstance()->getLevelByName($res["jail_level"]), $spawn, json_decode($res["jail_member"], true));
     }
 
 
     /**
-     * @return Jail[]|null
+     * @return Jail[]|array
      */
-    public static function getJails() : ?array
+    public static function getJails() : array
     {
         $stmt = Main::getDb()->prepare("SELECT * FROM jails");
         $res = $stmt->execute();
@@ -94,7 +98,7 @@ class JailController {
             $jails[] = self::getJailById($row["jail_id"]);
         }
 
-        return $jails ?? null;
+        return $jails ?? [];
     }
 
     /**
@@ -105,15 +109,16 @@ class JailController {
      *
      * @see EventListener::onMove()
      */
-    public static function isJailed(string $playerName) : ?Jail
+    public static function getJailByMember(string $playerName) : ?Jail
     {
-        $jails = JailController::getJails();
+        $stmt = Main::getDb()->prepare("SELECT jail_id FROM jails WHERE lower(jail_member) = lower(:playername)");
+        $stmt->bindParam("playername", $playerName);
+        $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
+        $stmt->close();
 
-        foreach ($jails as $jail)
-        {
-            if($jail->isJailed($playerName)) return $jail;
-        }
-        return null;
+        if(!isset($res["jail_id"])) return null;
+
+        return self::getJailById($res["jail_id"]);
     }
 
 
