@@ -31,6 +31,17 @@ class CheckJailedPlayerTask extends Task
                 $onlinePlayer->teleport($onlinePlayer->getLevel()->getSafeSpawn());
                 $playerJail->deleteMember();
             }
+
+            $remainingTime =  $playerJail->getRemainingTime() - time();
+            $day = floor($remainingTime / 86400);
+            $hourSeconds = $remainingTime % 86400;
+            $hour = floor($hourSeconds / 3600);
+            $minuteSec = $hourSeconds % 3600;
+            $minute = floor($minuteSec / 60);
+            $remainingSec = $minuteSec % 60;
+            $second = ceil($remainingSec);
+
+            $onlinePlayer->sendTip("§bU moet nog $day dagen, $hour uren, $minute minuten en $second seconden in de cel.");
         }
     }
 
