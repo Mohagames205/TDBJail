@@ -5,4 +5,10 @@ branches:
 projects:
   TDBJail:
     path: ""
+    libs:
+      - format: virion
+        vendor: poggit-project
+        src: jojoe77777/FormAPI/libFormAPI
+        version: ^1.3
+
 ...
