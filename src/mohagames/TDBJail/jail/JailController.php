@@ -36,21 +36,22 @@ class JailController {
      * @param AxisAlignedBB $axisAlignedBB
      * @param Level $level
      * @param Vector3 $spawn
-     * @param array $members
+     * @param string|null $member
      */
-    public static function createJail(string $name, AxisAlignedBB $axisAlignedBB, Level $level, ?Vector3 $spawn = null, array $members = [])
+    public static function createJail(string $name, AxisAlignedBB $axisAlignedBB, Level $level, ?Vector3 $spawn = null, ?string $member = null)
     {
-        $levelName = $level->getName();
+        if(!is_null(JailController::getJailByName($name))) return;
+
+        $levelName = $level->getFolderName();
         $axisAlignedBB = serialize($axisAlignedBB->expand(1, 0, 1));
         $spawn = !is_null($spawn) ? Helper::vectorToArray($spawn) : null;
-        $members = json_encode($members);
 
         $stmt = Main::getDb()->prepare("INSERT INTO jails (jail_name, jail_bb, jail_level, jail_spawn, jail_member) values(:name, :bb, :level, :spawn, :member)");
         $stmt->bindParam("name", $name);
         $stmt->bindParam("bb", $axisAlignedBB);
         $stmt->bindParam("level", $levelName);
         $stmt->bindParam("spawn", $spawn);
-        $stmt->bindParam("member", $members);
+        $stmt->bindParam("member", $member);
         $stmt->execute();
         $stmt->close();
     }
@@ -81,7 +82,7 @@ class JailController {
         if(!$res) return null;
 
         $spawn = !is_null(json_decode($res["jail_spawn"], true)) ? Helper::arrayToVector(json_decode($res["jail_spawn"], true)) : null;
-        return new Jail($res["jail_name"], unserialize($res["jail_bb"]), Server::getInstance()->getLevelByName($res["jail_level"]), $spawn, json_decode($res["jail_member"], true));
+        return new Jail($res["jail_name"], unserialize($res["jail_bb"]), Server::getInstance()->getLevelByName($res["jail_level"]), $spawn, $res["jail_member"]);
     }
 
 
