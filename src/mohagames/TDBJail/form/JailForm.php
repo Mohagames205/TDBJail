@@ -18,7 +18,6 @@ class JailForm
 
         $form = new CustomForm(function (Player $player, array $data = null) use ($jail){
             if(is_null($data)) return;
-            if(!isset($data)) return;
             $result = $data[0];
             if($result === null){
                 return;
