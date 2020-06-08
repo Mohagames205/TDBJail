@@ -12,6 +12,8 @@ use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
 use pocketmine\event\player\PlayerMoveEvent;
 use pocketmine\event\player\PlayerQuitEvent;
+use pocketmine\event\player\PlayerRespawnEvent;
+use pocketmine\level\Position;
 
 class EventListener implements Listener
 {
@@ -45,12 +47,13 @@ class EventListener implements Listener
 
     }
 
-    public function onDeath(PlayerDeathEvent $e)
+    public function onDeath(PlayerRespawnEvent $e)
     {
         $jail = JailController::getJailByMember($e->getPlayer()->getName());
         if(!is_null($jail))
         {
-            $e->getPlayer()->teleport($jail->getSpawn());
+            $spawn = $jail->getSpawn();
+            $e->setRespawnPosition(new Position($spawn->getX(), $spawn->getY(), $spawn->getZ(), $jail->getLevel()));
         }
     }
 
