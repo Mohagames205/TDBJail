@@ -7,11 +7,8 @@ use mohagames\TDBJail\Main;
 use mohagames\TDBJail\util\Helper;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
-use pocketmine\event\player\PlayerDeathEvent;
 use pocketmine\event\player\PlayerInteractEvent;
 use pocketmine\event\player\PlayerJoinEvent;
-use pocketmine\event\player\PlayerMoveEvent;
-use pocketmine\event\player\PlayerQuitEvent;
 use pocketmine\event\player\PlayerRespawnEvent;
 use pocketmine\level\Position;
 
@@ -20,8 +17,7 @@ class EventListener implements Listener
 
     public function onFirstPosition(BlockBreakEvent $e)
     {
-        if(Helper::isCorrectItem($e->getItem()))
-        {
+        if (Helper::isCorrectItem($e->getItem())) {
             $player = $e->getPlayer();
             Main::$firstPos[$player->getName()] = $e->getBlock()->asVector3();
             $e->setCancelled();
@@ -32,10 +28,8 @@ class EventListener implements Listener
 
     public function onSecondPosition(PlayerInteractEvent $e)
     {
-        if(Helper::isCorrectItem($e->getItem()))
-        {
-            if($e->getAction() == PlayerInteractEvent::RIGHT_CLICK_BLOCK)
-            {
+        if (Helper::isCorrectItem($e->getItem())) {
+            if ($e->getAction() == PlayerInteractEvent::RIGHT_CLICK_BLOCK) {
                 $player = $e->getPlayer();
                 Main::$secondPos[$player->getName()] = $e->getBlock()->asVector3();
                 $e->setCancelled();
@@ -50,8 +44,7 @@ class EventListener implements Listener
     public function onDeath(PlayerRespawnEvent $e)
     {
         $jail = JailController::getJailByMember($e->getPlayer()->getName());
-        if(!is_null($jail))
-        {
+        if (!is_null($jail)) {
             $spawn = $jail->getSpawn();
             $e->setRespawnPosition(new Position($spawn->getX(), $spawn->getY(), $spawn->getZ(), $jail->getLevel()));
         }
@@ -60,17 +53,13 @@ class EventListener implements Listener
     public function onJoin(PlayerJoinEvent $e)
     {
         $jail = JailController::getJailByMember($e->getPlayer()->getName());
-        if(!is_null($jail))
-        {
+        if (!is_null($jail)) {
             $playerJail = JailController::getJailAtPosition($e->getPlayer());
-            if(is_null($playerJail) || $playerJail->getId() != $jail->getId())
-            {
+            if (is_null($playerJail) || $playerJail->getId() != $jail->getId()) {
                 $e->getPlayer()->teleport($jail->getSpawn());
             }
         }
     }
-
-
 
 
 }

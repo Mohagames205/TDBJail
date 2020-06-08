@@ -13,7 +13,7 @@ class Helper
 
     public static function isCorrectItem(Item $item)
     {
-        $config  = Main::getInstance()->getConfig()->getAll();
+        $config = Main::getInstance()->getConfig()->getAll();
 
         return $item->getId() == $config["item_id"] && in_array($config["lore"], $item->getLore());
 

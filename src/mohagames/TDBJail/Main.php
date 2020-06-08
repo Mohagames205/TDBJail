@@ -8,21 +8,20 @@ use mohagames\TDBJail\event\EventListener;
 use mohagames\TDBJail\form\JailForm;
 use mohagames\TDBJail\jail\JailController;
 use mohagames\TDBJail\task\CheckJailedPlayerTask;
-use mohagames\TDBJail\util\Helper;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
-use pocketmine\network\mcpe\RakLibInterface;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
 use SQLite3;
 
-class Main extends PluginBase {
+class Main extends PluginBase
+{
 
     /**
      * @var Vector3[]
@@ -73,28 +72,23 @@ class Main extends PluginBase {
      */
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool
     {
-        if(!$sender instanceof Player) return true;
-        if($command->getName() == "jail")
-        {
-            if(!isset($args[0]))
-            {
+        if (!$sender instanceof Player) return true;
+        if ($command->getName() == "jail") {
+            if (!isset($args[0])) {
                 $this->sendHelpMenu($sender);
                 return true;
             }
 
-            switch($args[0])
-            {
+            switch ($args[0]) {
                 case "info":
-                    if(!$sender->hasPermission("jail.admin.info"))
-                    {
+                    if (!$sender->hasPermission("jail.admin.info")) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cU heeft geen permissions om deze command te gebruiken.");
                         return true;
                     }
 
                     $jail = JailController::getJailAtPosition($sender);
 
-                    if(is_null($jail))
-                    {
+                    if (is_null($jail)) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cDeze cel bestaat niet!");
                         return true;
                     }
@@ -104,8 +98,7 @@ class Main extends PluginBase {
 
                     break;
                 case "wand":
-                    if(!$sender->hasPermission("jail.admin.wand"))
-                    {
+                    if (!$sender->hasPermission("jail.admin.wand")) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cU heeft geen permissions om deze command te gebruiken.");
                         return true;
                     }
@@ -123,26 +116,22 @@ class Main extends PluginBase {
                     break;
 
                 case "save":
-                    if(!$sender->hasPermission("jail.admin.save"))
-                    {
+                    if (!$sender->hasPermission("jail.admin.save")) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cU heeft geen permissions om deze command te gebruiken.");
                         return true;
                     }
 
-                    if(!isset(self::$firstPos[$sender->getName()]) || !isset(self::$secondPos[$sender->getName()]))
-                    {
+                    if (!isset(self::$firstPos[$sender->getName()]) || !isset(self::$secondPos[$sender->getName()])) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cU moet beide locaties instellen met de §cJailWand§c.");
                         return true;
                     }
 
-                    if(!isset($args[1]))
-                    {
+                    if (!isset($args[1])) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cGelieve een jailnaam in te geven.");
                         return true;
                     }
 
-                    if(!is_null(JailController::getJailByName($args[1])))
-                    {
+                    if (!is_null(JailController::getJailByName($args[1]))) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cEr bestaat al een jail met deze naam!");
                         return true;
 
@@ -163,22 +152,19 @@ class Main extends PluginBase {
                     break;
 
                 case "delete":
-                    if(!$sender->hasPermission("jail.admin.delete"))
-                    {
+                    if (!$sender->hasPermission("jail.admin.delete")) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cU heeft geen permissions om deze command te gebruiken.");
                         return true;
                     }
 
-                    if(!isset($args[1]))
-                    {
+                    if (!isset($args[1])) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cGelieve een celnaam in te geven.");
                         return true;
                     }
 
                     $jail = JailController::getJailByName($args[1]);
 
-                    if(is_null($jail))
-                    {
+                    if (is_null($jail)) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cDeze cel bestaat niet!");
                         return true;
                     }
@@ -188,15 +174,13 @@ class Main extends PluginBase {
                     break;
 
                 case "setspawn":
-                    if(!$sender->hasPermission("jail.admin.setspawn"))
-                    {
+                    if (!$sender->hasPermission("jail.admin.setspawn")) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cU heeft geen permissions om deze command te gebruiken.");
                         return true;
                     }
 
-                    $jail =  JailController::getJailAtPosition($sender);
-                    if(is_null($jail))
-                    {
+                    $jail = JailController::getJailAtPosition($sender);
+                    if (is_null($jail)) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cU staat niet in een cel");
                         return true;
                     }
@@ -206,22 +190,19 @@ class Main extends PluginBase {
                     break;
 
                 default:
-                    if(!$sender->hasPermission("jail.add"))
-                    {
+                    if (!$sender->hasPermission("jail.add")) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cU heeft geen permissions om deze command te gebruiken.");
                         return true;
                     }
 
-                    if(!isset($args[0]) || empty($args[0]))
-                    {
+                    if (!isset($args[0]) || empty($args[0])) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cGelieve een celnaam in te geven.");
                         return true;
                     }
 
                     $jail = JailController::getJailByName($args[0]);
 
-                    if(is_null($jail))
-                    {
+                    if (is_null($jail)) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cDeze cel bestaat niet!");
                         return true;
                     }
@@ -230,49 +211,38 @@ class Main extends PluginBase {
 
                     return true;
             }
-        }
-
-        elseif($command->getName() == "unjail")
-        {
-            if(!$sender->hasPermission("jail.remove"))
-            {
+        } elseif ($command->getName() == "unjail") {
+            if (!$sender->hasPermission("jail.remove")) {
                 $sender->sendMessage("§f[§cTDBJail§f] §cU heeft geen permissions om deze command te gebruiken.");
                 return true;
             }
-            if(!isset($args[0]))
-            {
+            if (!isset($args[0])) {
                 $sender->sendMessage("§f[§cTDBJail§f] §cGelieve een celnaam in te geven.");
                 return true;
             }
 
             $jail = JailController::getJailByName($args[0]);
 
-            if(is_null($jail))
-            {
+            if (is_null($jail)) {
                 $sender->sendMessage("§f[§cTDBJail§f] §cDeze cel bestaat niet!");
                 return true;
             }
 
-            if(is_null($jail->getMember()))
-            {
+            if (is_null($jail->getMember())) {
                 $sender->sendMessage("§f[§cTDBJail§f] §cEr is niemand gejailed!");
                 return true;
             }
 
-            if($jail->deleteMember())
-            {
+            if ($jail->deleteMember()) {
                 $sender->sendMessage("§f[§cTDBJail§f] §aDe speler is succesvol vrij gelaten");
                 return true;
             }
             $sender->sendMessage("§f[§cTDBJail§f] §cEr is iets misgelopen!");
             return true;
-        }
-        elseif($command->getName() == "jails")
-        {
+        } elseif ($command->getName() == "jails") {
             $jails = JailController::getJails();
             $msg = "§f[§cTDBJail§f] §aHuidige cellen\n";
-            foreach($jails as $jail)
-            {
+            foreach ($jails as $jail) {
                 $remainingTime = $jail->getRemainingTime() - time();
                 $day = floor($remainingTime / 86400);
                 $hourSeconds = $remainingTime % 86400;
@@ -284,10 +254,9 @@ class Main extends PluginBase {
 
                 $gevangene = is_null($jail->getMember()) ? "§f| §cGeen gevangene" : $jail->getMember() . " §f| §a{d}§2d, §a{h}§2u, §a{m}§2m, §a{s}§2s";
 
-                $msg .= str_replace(["{d}", "{h}", "{m}", "{s}"], [$day, $hour, $minute, $second], "§f- " . TextFormat::GREEN . $jail->getName() . "§f: §2" . $gevangene .  "\n");
+                $msg .= str_replace(["{d}", "{h}", "{m}", "{s}"], [$day, $hour, $minute, $second], "§f- " . TextFormat::GREEN . $jail->getName() . "§f: §2" . $gevangene . "\n");
             }
-            if(count($jails) == 0)
-            {
+            if (count($jails) == 0) {
                 $msg = "§f[§cTDBJail§f] §aHuidige cellen\n§cEr zijn geen cellen";
             }
 
@@ -295,21 +264,20 @@ class Main extends PluginBase {
             return true;
 
 
-        }
-        else{
+        } else {
             $this->sendHelpMenu($sender);
             return false;
         }
         return false;
     }
 
-    public static function getDb() : SQLite3
+    public static function getDb(): SQLite3
     {
 
         return self::$db;
     }
 
-    public static function getInstance() : self
+    public static function getInstance(): self
     {
         return self::$instance;
     }

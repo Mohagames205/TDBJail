@@ -2,15 +2,14 @@
 
 namespace mohagames\TDBJail\jail;
 
-use mohagames\PlotArea\utils\Member;
 use mohagames\TDBJail\Main;
 use mohagames\TDBJail\util\Helper;
 use pocketmine\level\Level;
-use pocketmine\level\Location;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 
-class Jail {
+class Jail
+{
 
     /**
      * @var AxisAlignedBB
@@ -46,26 +45,26 @@ class Jail {
         $this->member = $member;
     }
 
-    public function getBoundingBox() : AxisAlignedBB
+    public function getBoundingBox(): AxisAlignedBB
     {
         return $this->boundingBox;
     }
 
-    public function getSpawn() : Vector3
+    public function getSpawn(): Vector3
     {
         $bb = $this->boundingBox;
 
-        $defaultSpawn = Helper::arrayToVector([($bb->maxX + $bb->minX)/2,$bb->minY + 1, ($bb->maxZ + $bb->minZ)/2]);
+        $defaultSpawn = Helper::arrayToVector([($bb->maxX + $bb->minX) / 2, $bb->minY + 1, ($bb->maxZ + $bb->minZ) / 2]);
 
         return $this->spawn ?? $defaultSpawn;
     }
 
-    public function getName() : string
+    public function getName(): string
     {
         return $this->name;
     }
 
-    public function setSpawn(Vector3 $spawn) : void
+    public function setSpawn(Vector3 $spawn): void
     {
         $id = $this->getId();
         $encodedSpawn = json_encode(Helper::vectorToArray($spawn));
@@ -79,12 +78,12 @@ class Jail {
         $this->spawn = $spawn;
     }
 
-    public function getLevel() : Level
+    public function getLevel(): Level
     {
         return $this->level;
     }
 
-    public function delete() : void
+    public function delete(): void
     {
         $id = $this->getId();
 
@@ -105,12 +104,10 @@ class Jail {
         $stmt->close();
     }
 
-    public function setMember(string $member, int $time) : bool
+    public function setMember(string $member, int $time): bool
     {
-        if(!$this->isJailed($member))
-        {
-            if(Helper::playerExists($member))
-            {
+        if (!$this->isJailed($member)) {
+            if (Helper::playerExists($member)) {
                 $this->member = strtolower($member);
 
                 $id = $this->getId();
@@ -149,18 +146,18 @@ class Jail {
         return $res["jail_time"];
     }
 
-    public function hasTimePassed() : bool
+    public function hasTimePassed(): bool
     {
         return $this->getRemainingTime() <= time();
     }
 
-    public function isJailed(string $member) : bool
+    public function isJailed(string $member): bool
     {
         return strtolower($member) == $this->getMember();
     }
 
 
-    public function getMember() : ?string
+    public function getMember(): ?string
     {
         $id = $this->getId();
 
@@ -176,7 +173,7 @@ class Jail {
      *
      * @return int
      */
-    public function getId() : int
+    public function getId(): int
     {
         $name = $this->name;
 
