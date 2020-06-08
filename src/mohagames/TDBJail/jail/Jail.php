@@ -164,12 +164,11 @@ class Jail {
     {
         $id = $this->getId();
 
-        $stmt = Main::getDb()->prepare("SELECT jail_member FROM jails WHERE jail_id");
+        $stmt = Main::getDb()->prepare("SELECT jail_member FROM jails WHERE jail_id = :jail_id");
         $stmt->bindParam("jail_id", $id);
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
 
         return $res["jail_member"];
-
     }
 
     /**
