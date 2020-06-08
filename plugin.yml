@@ -7,4 +7,32 @@ api: 3.12.1
 commands:
   jail:
     description: Jail command
+  unjail:
+    description: Unjail command
+  jails:
+    description: Toont alle jails met hun info
+    permission: jails
+
+permissions:
+  jail:
+    children:
+      jail.admin:
+        children:
+          jail.admin.info:
+            default: op
+          jail.admin.wand:
+            default: op
+          jail.admin.save:
+            default: op
+          jail.admin.delete:
+            default: op
+          jail.admin.setspawn:
+            default: op
+      jail.add:
+        default: op
+      jail.remove:
+        default: op
+  jails:
+    default: op
+
 ...
