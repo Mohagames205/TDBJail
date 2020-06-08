@@ -15,6 +15,7 @@ use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
+use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
 use pocketmine\utils\Config;
 
@@ -60,15 +61,22 @@ class Main extends PluginBase {
         self::$instance = $this;
     }
 
-
+    /**
+     * @param CommandSender $sender
+     * @param Command $command
+     * @param string $label
+     * @param array $args
+     * @return bool
+     */
     public function onCommand(CommandSender $sender, Command $command, string $label, array $args): bool
     {
         if($command->getName() == "jail")
         {
+            if(!$sender instanceof Player) return true;
             if(!isset($args[0]))
             {
                 $sender->sendMessage("§4Gelieve de juiste command in te geven");
-                return false;
+                return true;
             }
 
             switch($args[0])
