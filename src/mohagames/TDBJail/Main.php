@@ -184,8 +184,8 @@ class Main extends PluginBase {
                 default:
                     return false;
             }
-            return false;
         }
+        return false;
     }
 
     public static function getDb() : \SQLite3
