@@ -5,6 +5,7 @@ namespace mohagames\TDBJail\task;
 
 
 use mohagames\TDBJail\jail\JailController;
+use mohagames\TDBJail\Main;
 use pocketmine\Player;
 use pocketmine\scheduler\Task;
 use pocketmine\Server;
@@ -14,12 +15,12 @@ class CheckJailedPlayerTask extends Task
 
     public function onRun(int $currentTick)
     {
-        foreach (Server::getInstance()->getOnlinePlayers() as $onlinePlayer)
+        foreach (Main::getInstance()->getServer()->getOnlinePlayers() as $onlinePlayer)
         {
             $playerJailAtPos = JailController::getJailAtPosition($onlinePlayer);
             $playerJail = JailController::getJailByMember($onlinePlayer->getName());
 
-            if(is_null($playerJail)) return;
+            if(is_null($playerJail)) continue;
 
             if(is_null($playerJailAtPos))
             {
