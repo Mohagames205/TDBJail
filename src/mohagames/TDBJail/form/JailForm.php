@@ -7,6 +7,7 @@ namespace mohagames\TDBJail\form;
 use jojoe77777\FormAPI\CustomForm;
 use mohagames\TDBJail\jail\Jail;
 use mohagames\TDBJail\jail\JailController;
+use mohagames\TDBJail\Main;
 use mohagames\TDBJail\util\Helper;
 use pocketmine\Player;
 use pocketmine\Server;
@@ -14,7 +15,7 @@ use pocketmine\utils\TextFormat;
 
 class JailForm
 {
-    public static function openTbanUI(Player $player, Jail $jail){
+    public static function openJailUI(Player $player, Jail $jail){
 
         $form = new CustomForm(function (Player $player, array $data = null) use ($jail){
             if(is_null($data)) return;
@@ -35,7 +36,7 @@ class JailForm
             $banTime = $now + $day + $hour + $min;
 
             $target = $data[0];
-            $jailedPlayer = Server::getInstance()->getPlayerExact($target);
+            $jailedPlayer = Main::getInstance()->getServer()->getPlayerExact($target);
 
             if(!Helper::playerExists($target))
             {
@@ -45,14 +46,17 @@ class JailForm
 
             if(!is_null(JailController::getJailByMember($target)) || $jail->isJailed($target))
             {
-                if(!is_null($jailedPlayer)) $jailedPlayer->teleport($jail->getSpawn());
-
                 $player->sendMessage("§f[§cTDBJail§f] §cDeze speler is al toegevoegd.");
                 return;
             }
 
             if($jail->setMember($target, $banTime))
             {
+                if(!is_null($jailedPlayer))
+                {
+                    $jailedPlayer->sendMessage("§f[§cTDBJail§f] §aU bent gejailed door §2" . $player->getName() . "§a.");
+                    $jailedPlayer->teleport($jail->getSpawn());
+                }
                 $player->sendMessage("§f[§cTDBJail§f] §aDe speler is succesvol toegevoegd!");
                 return;
             }
@@ -65,7 +69,6 @@ class JailForm
         $form->addSlider("Day/s", 0, 30, 1, 0);
         $form->addSlider("Hour/s", 0, 24, 1, 0);
         $form->addSlider("Minute/s", 0, 60, 5, 0);
-        $form->addInput("Reason");
         $player->sendForm($form);
         return $form;
     }
