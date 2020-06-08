@@ -1,6 +1,6 @@
 ---
 name: TDBJail
-version: 0.0.1
+version: 1.0.0
 main: mohagames\TDBJail\Main
 api: 3.12.1
 
