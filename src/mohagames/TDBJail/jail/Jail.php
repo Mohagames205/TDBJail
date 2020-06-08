@@ -33,7 +33,7 @@ class Jail {
     private $spawn;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $member;
 
