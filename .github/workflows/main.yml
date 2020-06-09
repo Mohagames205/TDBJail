@@ -14,6 +14,10 @@ jobs:
           echo Making directory...
           mkdir vendor
           echo Directory made.
+      - name: wget virions, FormAPI
+        uses: wei/wget@v1
+        with:
+          args: -O vendor/FormAPI.phar https://poggit.pmmp.io/r/54589/FormApi_dev-9.phar
       - name: Run PHPStan
         uses: nxtlvlsoftware/pmmp-phpstan-action@3
         with:
