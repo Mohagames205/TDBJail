@@ -26,7 +26,7 @@ class JailController
 
         foreach (self::getJails() as $jail) {
             $bb = $jail->getBoundingBox();
-            if ($bb->isVectorInside($newPosition) && ($jail->getLevel()->getFolderName() == $jail->getLevel()->getFolderName())) return $jail;
+            if ($bb->isVectorInside($newPosition) && ($location->getLevel()->getFolderName() == $jail->getLevel()->getFolderName())) return $jail;
         }
         return null;
     }
