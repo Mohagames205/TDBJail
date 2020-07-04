@@ -45,6 +45,9 @@ class JailController
         $axisAlignedBB = serialize($axisAlignedBB->expand(1, 0, 1));
         $spawn = !is_null($spawn) ? Helper::vectorToArray($spawn) : null;
 
+        /**
+         * @var SQLite3Stmt $stmt
+         */
         $stmt = Main::getDb()->prepare("INSERT INTO jails (jail_name, jail_bb, jail_level, jail_spawn, jail_member) values(:name, :bb, :level, :spawn, :member)");
         $stmt->bindParam("name", $name);
         $stmt->bindParam("bb", $axisAlignedBB);
@@ -61,6 +64,10 @@ class JailController
      */
     public static function getJailById(int $id): ?Jail
     {
+
+        /**
+         * @var SQLite3Stmt $stmt
+         */
         $stmt = Main::getDb()->prepare("SELECT * FROM jails WHERE jail_id = :id");
         $stmt->bindParam("id", $id);
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
@@ -80,6 +87,10 @@ class JailController
 
     public static function getJailByName(string $name): ?Jail
     {
+
+        /**
+         * @var SQLite3Stmt $stmt
+         */
         $stmt = Main::getDb()->prepare("SELECT * FROM jails WHERE lower(jail_name) = lower(:name)");
         $stmt->bindParam("name", $name);
 
@@ -103,6 +114,10 @@ class JailController
      */
     public static function getJails(): array
     {
+
+        /**
+         * @var SQLite3Stmt $stmt
+         */
         $stmt = Main::getDb()->prepare("SELECT * FROM jails");
         $res = $stmt->execute();
 
@@ -123,6 +138,10 @@ class JailController
      */
     public static function getJailByMember(string $playerName): ?Jail
     {
+
+        /**
+         * @var SQLite3Stmt $stmt
+         */
         $stmt = Main::getDb()->prepare("SELECT jail_id FROM jails WHERE lower(jail_member) = lower(:playername)");
         $stmt->bindParam("playername", $playerName);
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
