@@ -10,6 +10,7 @@ use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
+use pocketmine\tile\Chest;
 
 class JailController
 {
@@ -67,9 +68,15 @@ class JailController
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
 
         if (!$res) return null;
-        $spawn = !is_null(json_decode($res["jail_spawn"], true)) ? Helper::arrayToVector(json_decode($res["jail_spawn"], true)) : null;
 
-        return new Jail($res["jail_name"], unserialize($res["jail_bb"]), Server::getInstance()->getLevelByName($res["jail_level"]), $spawn, $res["jail_member"]);
+        $level = Server::getInstance()->getLevelByName($res["jail_level"]);
+        $spawn = !is_null(json_decode($res["jail_spawn"], true)) ? Helper::arrayToVector(json_decode($res["jail_spawn"], true)) : null;
+        /**
+         * @var $chest Chest|null
+         */
+        $chest = !is_null($res["jail_chest"]) ? $level->getTile(Helper::arrayToVector(json_decode($res["jail_chest"], true))) : null;
+
+        return new Jail($res["jail_name"], unserialize($res["jail_bb"]), $level, $spawn, $res["jail_member"], $chest);
     }
 
     public static function getJailByName(string $name): ?Jail
@@ -80,9 +87,15 @@ class JailController
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
 
         if (!$res) return null;
-
+        $level = Server::getInstance()->getLevelByName($res["jail_level"]);
         $spawn = !is_null(json_decode($res["jail_spawn"], true)) ? Helper::arrayToVector(json_decode($res["jail_spawn"], true)) : null;
-        return new Jail($res["jail_name"], unserialize($res["jail_bb"]), Server::getInstance()->getLevelByName($res["jail_level"]), $spawn, $res["jail_member"]);
+
+        /**
+         * @var $chest Chest|null
+         */
+        $chest = !is_null($res["jail_chest"]) ? $level->getTile(Helper::arrayToVector(json_decode($res["jail_chest"], true))) : null;
+
+        return new Jail($res["jail_name"], unserialize($res["jail_bb"]), $level, $spawn, $res["jail_member"], $chest);
     }
 
 
