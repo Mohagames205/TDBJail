@@ -4,6 +4,8 @@ parameters:
   level: 3
   autoload_files:
     - phar:///pocketmine/PocketMine-MP.phar/vendor/autoload.php
+  scanFiles:
+    - phar:///source/vendor/FormAPI.phar/src/
   excludes_analyse:
     - source/vendor
   reportUnmatchedIgnoredErrors: false
