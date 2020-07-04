@@ -6,6 +6,7 @@ namespace mohagames\TDBJail;
 
 use mohagames\TDBJail\event\EventListener;
 use mohagames\TDBJail\form\JailForm;
+use mohagames\TDBJail\jail\Jail;
 use mohagames\TDBJail\jail\JailController;
 use mohagames\TDBJail\task\CheckJailedPlayerTask;
 use pocketmine\command\Command;
@@ -39,6 +40,11 @@ class Main extends PluginBase
     public static $spawnPos;
 
     /**
+     * @var Jail[]
+     */
+    public static $setChestSession;
+
+    /**
      * @var Main
      */
     private static $instance;
@@ -53,7 +59,15 @@ class Main extends PluginBase
         $this->getServer()->getPluginManager()->registerEvents(new EventListener(), $this);
 
         self::$db = new SQLite3($this->getDataFolder() . "Jail.db");
+
         self::$db->query("CREATE TABLE IF NOT EXISTS jails(jail_id INTEGER PRIMARY KEY AUTOINCREMENT, jail_name TEXT, jail_bb TEXT, jail_level TEXT, jail_spawn TEXT, jail_member TEXT, jail_time TEXT)");
+        try {
+            self::$db->query("ALTER TABLE jails ADD jail_chest TEXT");
+        }
+        catch (\ErrorException $e)
+        {
+            $this->getLogger()->alert("Oops column 'jail_chest' bestaat al en hoeft niet aangemaakt te worden\n" . $e->getMessage());
+        }
 
         $config = new Config($this->getDataFolder() . "config.yml", Config::YAML, ["item_id" => ItemIds::GOLD_AXE, "lore" => "§cJailCreator"]);
         $config->save();
@@ -189,6 +203,25 @@ class Main extends PluginBase
                     $sender->sendMessage("§f[§cTDBJail§f] §aDe spawn is succesvol ingesteld op uw locatie.");
                     break;
 
+                case "setchest":
+                    if(!$sender->hasPermission("jail.admin.setchest"))
+                    {
+                        $sender->sendMessage("§f[§cTDBJail§f] §cU heeft geen permissions om deze command te gebruiken.");
+                        return true;
+                    }
+
+                    $jail = JailController::getJailAtPosition($sender);
+                    if (is_null($jail))
+                    {
+                        $sender->sendMessage("§f[§cTDBJail§f] §cU staat niet in een cel");
+                        return true;
+                    }
+
+                    Main::$setChestSession[$sender->getName()] = $jail;
+                    $sender->sendMessage("§f[§cTDBJail§f] §aGelieve nu de chest te breken.");
+                    return true;
+
+
                 default:
                     if (!$sender->hasPermission("jail.add")) {
                         $sender->sendMessage("§f[§cTDBJail§f] §cU heeft geen permissions om deze command te gebruiken.");
@@ -232,9 +265,9 @@ class Main extends PluginBase
                 $sender->sendMessage("§f[§cTDBJail§f] §cEr is niemand gejailed!");
                 return true;
             }
-
+            $member = $jail->getMember();
             if ($jail->deleteMember()) {
-                $sender->sendMessage("§f[§cTDBJail§f] §aDe speler is succesvol vrij gelaten");
+                $sender->sendMessage("§f[§cTDBJail§f] §2$member §ais succesvol geunjailed!");
                 return true;
             }
             $sender->sendMessage("§f[§cTDBJail§f] §cEr is iets misgelopen!");
@@ -282,7 +315,7 @@ class Main extends PluginBase
         return self::$instance;
     }
 
-    private function sendHelpMenu(Player $sender)
+    private function sendHelpMenu(Player $sender) : void
     {
         $sender->sendMessage("§f[§cTDBJail§f] §cGelieve 1 van de beschikbare commands te gebruiken.");
         $sender->sendMessage("§f- §a/jail <jailnaam> §f|§o Jailed een speler in de gegeven cel.");
