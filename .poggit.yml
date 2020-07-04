@@ -10,5 +10,7 @@ projects:
         vendor: poggit-project
         src: jojoe77777/FormAPI/libFormAPI
         version: ^1.3
+    lint:
+      phpstan: false
 
 ...
