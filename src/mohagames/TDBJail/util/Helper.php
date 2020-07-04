@@ -11,7 +11,7 @@ use pocketmine\math\Vector3;
 class Helper
 {
 
-    public static function isCorrectItem(Item $item)
+    public static function isCorrectItem(Item $item) : bool
     {
         $config = Main::getInstance()->getConfig()->getAll();
 
@@ -20,12 +20,12 @@ class Helper
 
     }
 
-    public static function arrayToVector(array $arrayedVector)
+    public static function arrayToVector(array $arrayedVector) : Vector3
     {
         return new Vector3($arrayedVector[0], $arrayedVector[1], $arrayedVector[2]);
     }
 
-    public static function vectorToArray(Vector3 $vector3)
+    public static function vectorToArray(Vector3 $vector3) : array
     {
         return [$vector3->getX(), $vector3->getY(), $vector3->getZ()];
     }
@@ -36,7 +36,7 @@ class Helper
      * @param string $playername
      * @return bool
      */
-    public static function playerExists(?string $playername)
+    public static function playerExists(?string $playername) : bool
     {
         if (!is_null($playername)) {
             $playername = strtolower($playername);

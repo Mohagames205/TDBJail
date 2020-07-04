@@ -16,7 +16,7 @@ use pocketmine\level\Position;
 class EventListener implements Listener
 {
 
-    public function onFirstPosition(BlockBreakEvent $e)
+    public function onFirstPosition(BlockBreakEvent $e) : void
     {
         if (Helper::isCorrectItem($e->getItem())) {
             $player = $e->getPlayer();
@@ -27,7 +27,7 @@ class EventListener implements Listener
         }
     }
 
-    public function onSecondPosition(PlayerInteractEvent $e)
+    public function onSecondPosition(PlayerInteractEvent $e) : void
     {
         if (Helper::isCorrectItem($e->getItem())) {
             if ($e->getAction() == PlayerInteractEvent::RIGHT_CLICK_BLOCK) {
@@ -42,7 +42,7 @@ class EventListener implements Listener
 
     }
 
-    public function onSetChestInteract(BlockBreakEvent $e)
+    public function onSetChestInteract(BlockBreakEvent $e) : void
     {
         $player = $e->getPlayer();
         if (isset(Main::$setChestSession[$player->getName()])) {
@@ -62,7 +62,7 @@ class EventListener implements Listener
         }
     }
 
-    public function onDeath(PlayerRespawnEvent $e)
+    public function onDeath(PlayerRespawnEvent $e) : void
     {
         $jail = JailController::getJailByMember($e->getPlayer()->getName());
         if (!is_null($jail)) {
@@ -71,7 +71,7 @@ class EventListener implements Listener
         }
     }
 
-    public function onJoin(PlayerJoinEvent $e)
+    public function onJoin(PlayerJoinEvent $e) : void
     {
         $jail = JailController::getJailByMember($e->getPlayer()->getName());
         if (!is_null($jail)) {

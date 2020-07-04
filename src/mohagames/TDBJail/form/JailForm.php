@@ -14,7 +14,7 @@ use pocketmine\utils\TextFormat;
 
 class JailForm
 {
-    public static function openJailUI(Player $player, Jail $jail)
+    public static function openJailUI(Player $player, Jail $jail) : void
     {
 
         $form = new CustomForm(function (Player $player, array $data = null) use ($jail) {
@@ -66,7 +66,6 @@ class JailForm
         $form->addSlider("Hour/s", 0, 24, 1, 0);
         $form->addSlider("Minute/s", 0, 60, 5, 0);
         $player->sendForm($form);
-        return $form;
     }
 
 

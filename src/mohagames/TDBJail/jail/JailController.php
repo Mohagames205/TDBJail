@@ -15,8 +15,6 @@ use pocketmine\tile\Chest;
 class JailController
 {
 
-    public static $jailedPlayers = [];
-
     /**
      * @param Position $location
      * @return Jail|null
@@ -39,7 +37,7 @@ class JailController
      * @param Vector3 $spawn
      * @param string|null $member
      */
-    public static function createJail(string $name, AxisAlignedBB $axisAlignedBB, Level $level, ?Vector3 $spawn = null, ?string $member = null)
+    public static function createJail(string $name, AxisAlignedBB $axisAlignedBB, Level $level, ?Vector3 $spawn = null, ?string $member = null) : void
     {
         if (!is_null(JailController::getJailByName($name))) return;
 

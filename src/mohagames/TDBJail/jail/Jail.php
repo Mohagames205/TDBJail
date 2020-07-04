@@ -10,6 +10,7 @@ use pocketmine\math\Vector3;
 use pocketmine\OfflinePlayer;
 use pocketmine\Server;
 use pocketmine\tile\Chest;
+use SQLite3Stmt;
 
 class Jail
 {
@@ -73,16 +74,19 @@ class Jail
         return $this->name;
     }
 
-    public function getLootChest() : Chest
+    public function getLootChest() : ?Chest
     {
         return $this->lootChest;
     }
 
-    public function setLootChest(Chest $lootChest)
+    public function setLootChest(Chest $lootChest) : void
     {
         $lootChestLocation = json_encode([$lootChest->getX(), $lootChest->getY(), $lootChest->getZ()]);
-
         $id = $this->getId();
+
+        /**
+         * @var SQLite3Stmt $stmt
+         */
         $stmt = Main::getDb()->prepare("UPDATE jails SET jail_chest = :chest WHERE jail_id = :jail_id");
         $stmt->bindParam("chest", $lootChestLocation);
         $stmt->bindParam("jail_id", $id);
@@ -92,11 +96,15 @@ class Jail
         $this->lootChest = $lootChest;
     }
 
-    public function setSpawn(Vector3 $spawn): void
+    public function setSpawn(Vector3 $spawn) : void
     {
         $id = $this->getId();
         $encodedSpawn = json_encode(Helper::vectorToArray($spawn));
         //db query
+
+        /**
+         * @var SQLite3Stmt $stmt
+         */
         $stmt = Main::getDb()->prepare("UPDATE jails SET jail_spawn = :spawn WHERE jail_id = :jail_id");
         $stmt->bindParam("spawn", $encodedSpawn);
         $stmt->bindParam("jail_id", $id);
@@ -115,16 +123,22 @@ class Jail
     {
         $id = $this->getId();
 
+        /**
+         * @var SQLite3Stmt $stmt
+         */
         $stmt = Main::getDb()->prepare("DELETE FROM jails WHERE jail_id = :id");
         $stmt->bindParam("id", $id);
         $stmt->execute();
         $stmt->close();
     }
 
-    public function setTime(int $time)
+    public function setTime(int $time) : void
     {
         $id = $this->getId();
 
+        /**
+         * @var SQLite3Stmt $stmt
+         */
         $stmt = Main::getDb()->prepare("UPDATE jails SET jail_time = :time WHERE jail_id = :jail_id");
         $stmt->bindParam("time", $time);
         $stmt->bindParam("jail_id", $id);
@@ -139,6 +153,10 @@ class Jail
                 $this->member = strtolower($member);
 
                 $id = $this->getId();
+
+                /**
+                 * @var SQLite3Stmt $stmt
+                 */
                 $stmt = Main::getDb()->prepare("UPDATE jails SET jail_member = lower(:member) WHERE jail_id = :id");
                 $stmt->bindParam("member", $member);
                 $stmt->bindParam("id", $id);
@@ -160,7 +178,7 @@ class Jail
         return false;
     }
 
-    public function deleteMember()
+    public function deleteMember() : bool
     {
         //lootChest logica alle items moeten teruggegeven worden aan de gejailed speler
         $lootChest = $this->getLootChest();
@@ -173,6 +191,10 @@ class Jail
 
         $id = $this->getId();
         $this->member = null;
+
+        /**
+         * @var SQLite3Stmt $stmt
+         */
         $stmt = Main::getDb()->prepare("UPDATE jails SET jail_member = NULL WHERE jail_id = :jail_id");
         $stmt->bindParam("jail_id", $id);
         $stmt->execute();
@@ -181,10 +203,13 @@ class Jail
         return true;
     }
 
-    public function getRemainingTime()
+    public function getRemainingTime() : int
     {
         $id = $this->getId();
 
+        /**
+         * @var SQLite3Stmt $stmt
+         */
         $stmt = Main::getDb()->prepare("SELECT jail_time FROM jails WHERE jail_id = :id");
         $stmt->bindParam("id", $id);
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
@@ -217,6 +242,9 @@ class Jail
     {
         $name = $this->name;
 
+        /**
+         * @var SQLite3Stmt $stmt
+         */
         $stmt = Main::getDb()->prepare("SELECT jail_id FROM jails WHERE lower(jail_name) = lower(:jail_name)");
         $stmt->bindParam("jail_name", $name);
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
