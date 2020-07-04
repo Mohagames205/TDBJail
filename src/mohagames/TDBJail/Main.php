@@ -321,6 +321,7 @@ class Main extends PluginBase
         $sender->sendMessage("§f- §a/jail <jailnaam> §f|§o Jailed een speler in de gegeven cel.");
         $sender->sendMessage("§f- §a/jail info §f|§o Toont info over de cel waarop je staat.");
         $sender->sendMessage("§f- §a/jail wand §f|§o Geeft jouw  een jailwand.");
+        $sender->sendMessage("§f- §a/jail setchest §f|§o Stelt de lootchest van de Jail in.");
         $sender->sendMessage("§f- §a/jail save <jailnaam> §f|§o Slaagt de jail op");
         $sender->sendMessage("§f- §a/jail delete <jailnaam> §f|§o Delete de jail met de gegeven naam");
         $sender->sendMessage("§f- §a/jail setspawn §f|§o Stelt de spawn in in de jail waarin je staat.");

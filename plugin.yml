@@ -1,6 +1,6 @@
 ---
 name: TDBJail
-version: 1.0.0
+version: 1.1.0
 main: mohagames\TDBJail\Main
 api: 3.12.1
 
@@ -27,6 +27,8 @@ permissions:
           jail.admin.delete:
             default: op
           jail.admin.setspawn:
+            default: op
+          jail.admin.setchest:
             default: op
       jail.add:
         default: op
