@@ -1,11 +1,12 @@
 parameters:
   paths:
     - /source/src
-  level: 3
+  level: 7
   autoload_files:
     - phar:///pocketmine/PocketMine-MP.phar/vendor/autoload.php
   autoload_directories:
     - /source/src
+    - phar:///source/vendor/FormAPI.phar/src/
   excludes_analyse:
     - source/vendor
   reportUnmatchedIgnoredErrors: false
