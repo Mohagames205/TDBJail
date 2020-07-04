@@ -73,7 +73,7 @@ class JailController
         $spawn = !is_null(json_decode($res["jail_spawn"], true)) ? Helper::arrayToVector(json_decode($res["jail_spawn"], true)) : null;
 
         /**
-         * @var Chest|null
+         * @var Chest|null $chest
          */
         $chest = !is_null($res["jail_chest"]) ? $level->getTile(Helper::arrayToVector(json_decode($res["jail_chest"], true))) : null;
 
@@ -92,7 +92,7 @@ class JailController
         $spawn = !is_null(json_decode($res["jail_spawn"], true)) ? Helper::arrayToVector(json_decode($res["jail_spawn"], true)) : null;
 
         /**
-         * @var Chest|null
+         * @var Chest|null $chest
          */
         $chest = !is_null($res["jail_chest"]) ? $level->getTile(Helper::arrayToVector(json_decode($res["jail_chest"], true))) : null;
 
