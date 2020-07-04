@@ -5,6 +5,7 @@ namespace mohagames\TDBJail\event;
 use mohagames\TDBJail\jail\JailController;
 use mohagames\TDBJail\Main;
 use mohagames\TDBJail\util\Helper;
+use pocketmine\block\Chest;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
 use pocketmine\event\player\PlayerInteractEvent;
@@ -39,6 +40,26 @@ class EventListener implements Listener
 
         }
 
+    }
+
+    public function onSetChestInteract(BlockBreakEvent $e)
+    {
+        $player = $e->getPlayer();
+        if (isset(Main::$setChestSession[$player->getName()])) {
+            if($e->getBlock() instanceof Chest)
+            {
+                $jail = Main::$setChestSession[$player->getName()];
+                $chestTile = $e->getBlock()->getLevel()->getTile($e->getBlock());
+                if($chestTile instanceof \pocketmine\tile\Chest)
+                {
+                    var_dump($chestTile instanceof \pocketmine\tile\Chest);
+                    $jail->setLootChest($chestTile);
+                    $player->sendMessage("§f[§cTDBJail§f] §aDe lootchest is succesvol ingesteld.");
+                }
+            }
+            $e->setCancelled();
+            unset(Main::$setChestSession[$player->getName()]);
+        }
     }
 
     public function onDeath(PlayerRespawnEvent $e)
