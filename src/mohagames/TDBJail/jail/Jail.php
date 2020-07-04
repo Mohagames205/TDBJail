@@ -7,6 +7,9 @@ use mohagames\TDBJail\util\Helper;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
+use pocketmine\OfflinePlayer;
+use pocketmine\Server;
+use pocketmine\tile\Chest;
 
 class Jail
 {
@@ -36,13 +39,19 @@ class Jail
      */
     private $member;
 
-    public function __construct(string $name, AxisAlignedBB $boundingBox, Level $level, ?Vector3 $spawn = null, string $member = null)
+    /**
+     * @var Chest
+     */
+    private $lootChest;
+
+    public function __construct(string $name, AxisAlignedBB $boundingBox, Level $level, ?Vector3 $spawn = null, string $member = null, Chest $lootChest = null)
     {
         $this->name = $name;
         $this->boundingBox = $boundingBox;
         $this->level = $level;
         $this->spawn = $spawn;
         $this->member = $member;
+        $this->lootChest = $lootChest;
     }
 
     public function getBoundingBox(): AxisAlignedBB
@@ -62,6 +71,25 @@ class Jail
     public function getName(): string
     {
         return $this->name;
+    }
+
+    public function getLootChest() : Chest
+    {
+        return $this->lootChest;
+    }
+
+    public function setLootChest(Chest $lootChest)
+    {
+        $lootChestLocation = json_encode([$lootChest->getX(), $lootChest->getY(), $lootChest->getZ()]);
+
+        $id = $this->getId();
+        $stmt = Main::getDb()->prepare("UPDATE jails SET jail_chest = :chest WHERE jail_id = :jail_id");
+        $stmt->bindParam("chest", $lootChestLocation);
+        $stmt->bindParam("jail_id", $id);
+        $stmt->execute();
+        $stmt->close();
+
+        $this->lootChest = $lootChest;
     }
 
     public function setSpawn(Vector3 $spawn): void
@@ -117,6 +145,15 @@ class Jail
                 $stmt->execute();
 
                 $this->setTime($time);
+
+                //lootChest logica alle items in de speler zijn inv moeten in de chest gezet worden.
+                $lootChest = $this->getLootChest();
+                $player = Server::getInstance()->getOfflinePlayer($member);
+                if(!is_null($lootChest))
+                {
+                    $lootChest->getInventory()->setContents($player->getInventory()->getContents());
+                    $player->getInventory()->setContents([]);
+                }
                 return true;
             }
         }
@@ -125,6 +162,15 @@ class Jail
 
     public function deleteMember()
     {
+        //lootChest logica alle items moeten teruggegeven worden aan de gejailed speler
+        $lootChest = $this->getLootChest();
+        $player = Server::getInstance()->getOfflinePlayer($this->member);
+        if(!is_null($lootChest))
+        {
+            $player->getInventory()->setContents($lootChest->getInventory()->getContents());
+            $lootChest->getInventory()->setContents([]);
+        }
+
         $id = $this->getId();
         $this->member = null;
         $stmt = Main::getDb()->prepare("UPDATE jails SET jail_member = NULL WHERE jail_id = :jail_id");
@@ -159,13 +205,7 @@ class Jail
 
     public function getMember(): ?string
     {
-        $id = $this->getId();
-
-        $stmt = Main::getDb()->prepare("SELECT jail_member FROM jails WHERE jail_id = :jail_id");
-        $stmt->bindParam("jail_id", $id);
-        $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
-
-        return $res["jail_member"];
+        return $this->member;
     }
 
     /**
