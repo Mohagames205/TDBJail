@@ -132,13 +132,13 @@ class Jail
         $stmt->close();
     }
 
+    /**
+     * @param int $time
+     * @var SQLite3Stmt $stmt
+     */
     public function setTime(int $time) : void
     {
         $id = $this->getId();
-
-        /**
-         * @var SQLite3Stmt $stmt
-         */
         $stmt = Main::getDb()->prepare("UPDATE jails SET jail_time = :time WHERE jail_id = :jail_id");
         $stmt->bindParam("time", $time);
         $stmt->bindParam("jail_id", $id);
