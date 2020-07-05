@@ -169,8 +169,10 @@ class Jail
                 $player = Server::getInstance()->getOfflinePlayer($member);
                 if(!is_null($lootChest))
                 {
-                    $lootChest->getInventory()->setContents($player->getInventory()->getContents());
-                    $player->getInventory()->setContents([]);
+                    if($lootChest->getInventory()->getSize() <= $player->getInventory()->getSize()) {
+                        $lootChest->getInventory()->setContents($player->getInventory()->getContents());
+                        $player->getInventory()->setContents([]);
+                    }
                 }
                 return true;
             }
@@ -185,8 +187,10 @@ class Jail
         $player = Server::getInstance()->getOfflinePlayer($this->member);
         if(!is_null($lootChest))
         {
-            $player->getInventory()->setContents($lootChest->getInventory()->getContents());
-            $lootChest->getInventory()->setContents([]);
+            if($lootChest->getInventory()->getSize() >= $player->getInventory()->getSize()){
+                $player->getInventory()->setContents($lootChest->getInventory()->getContents());
+                $lootChest->getInventory()->setContents([]);
+            }
         }
 
         $id = $this->getId();
