@@ -8,6 +8,7 @@ use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\OfflinePlayer;
+use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\tile\Chest;
 use SQLite3Stmt;
@@ -84,9 +85,7 @@ class Jail
         $lootChestLocation = json_encode([$lootChest->getX(), $lootChest->getY(), $lootChest->getZ()]);
         $id = $this->getId();
 
-        /**
-         * @var SQLite3Stmt $stmt
-         */
+        /** @var SQLite3Stmt $stmt */
         $stmt = Main::getDb()->prepare("UPDATE jails SET jail_chest = :chest WHERE jail_id = :jail_id");
         $stmt->bindParam("chest", $lootChestLocation);
         $stmt->bindParam("jail_id", $id);
@@ -102,9 +101,7 @@ class Jail
         $encodedSpawn = json_encode(Helper::vectorToArray($spawn));
         //db query
 
-        /**
-         * @var SQLite3Stmt $stmt
-         */
+        /** @var SQLite3Stmt $stmt */
         $stmt = Main::getDb()->prepare("UPDATE jails SET jail_spawn = :spawn WHERE jail_id = :jail_id");
         $stmt->bindParam("spawn", $encodedSpawn);
         $stmt->bindParam("jail_id", $id);
@@ -123,9 +120,7 @@ class Jail
     {
         $id = $this->getId();
 
-        /**
-         * @var SQLite3Stmt $stmt
-         */
+        /** @var SQLite3Stmt $stmt */
         $stmt = Main::getDb()->prepare("DELETE FROM jails WHERE jail_id = :id");
         $stmt->bindParam("id", $id);
         $stmt->execute();
@@ -134,11 +129,12 @@ class Jail
 
     /**
      * @param int $time
-     * @var SQLite3Stmt $stmt
      */
     public function setTime(int $time) : void
     {
         $id = $this->getId();
+
+        /** @var SQLite3Stmt $stmt */
         $stmt = Main::getDb()->prepare("UPDATE jails SET jail_time = :time WHERE jail_id = :jail_id");
         $stmt->bindParam("time", $time);
         $stmt->bindParam("jail_id", $id);
@@ -154,9 +150,7 @@ class Jail
 
                 $id = $this->getId();
 
-                /**
-                 * @var SQLite3Stmt $stmt
-                 */
+                /** @var SQLite3Stmt $stmt */
                 $stmt = Main::getDb()->prepare("UPDATE jails SET jail_member = lower(:member) WHERE jail_id = :id");
                 $stmt->bindParam("member", $member);
                 $stmt->bindParam("id", $id);
@@ -166,6 +160,8 @@ class Jail
 
                 //lootChest logica alle items in de speler zijn inv moeten in de chest gezet worden.
                 $lootChest = $this->getLootChest();
+
+                /** @var Player $player */
                 $player = Server::getInstance()->getOfflinePlayer($member);
                 if(!is_null($lootChest))
                 {
@@ -184,6 +180,8 @@ class Jail
     {
         //lootChest logica alle items moeten teruggegeven worden aan de gejailed speler
         $lootChest = $this->getLootChest();
+
+        /** @var Player $player */
         $player = Server::getInstance()->getOfflinePlayer($this->member);
         if(!is_null($lootChest))
         {
@@ -196,9 +194,7 @@ class Jail
         $id = $this->getId();
         $this->member = null;
 
-        /**
-         * @var SQLite3Stmt $stmt
-         */
+        /** @var SQLite3Stmt $stmt */
         $stmt = Main::getDb()->prepare("UPDATE jails SET jail_member = NULL WHERE jail_id = :jail_id");
         $stmt->bindParam("jail_id", $id);
         $stmt->execute();
@@ -211,11 +207,11 @@ class Jail
     {
         $id = $this->getId();
 
-        /**
-         * @var SQLite3Stmt $stmt
-         */
+        /** @var SQLite3Stmt $stmt */
         $stmt = Main::getDb()->prepare("SELECT jail_time FROM jails WHERE jail_id = :id");
         $stmt->bindParam("id", $id);
+
+        /** @var array $res */
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
 
         return $res["jail_time"];
@@ -246,11 +242,11 @@ class Jail
     {
         $name = $this->name;
 
-        /**
-         * @var SQLite3Stmt $stmt
-         */
+        /** @var SQLite3Stmt $stmt */
         $stmt = Main::getDb()->prepare("SELECT jail_id FROM jails WHERE lower(jail_name) = lower(:jail_name)");
         $stmt->bindParam("jail_name", $name);
+
+        /** @var array $res */
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
         $stmt->close();
 

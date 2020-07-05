@@ -11,6 +11,7 @@ use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\Server;
 use pocketmine\tile\Chest;
+use SQLite3Stmt;
 
 class JailController
 {
@@ -45,9 +46,7 @@ class JailController
         $axisAlignedBB = serialize($axisAlignedBB->expand(1, 0, 1));
         $spawn = !is_null($spawn) ? Helper::vectorToArray($spawn) : null;
 
-        /**
-         * @var SQLite3Stmt $stmt
-         */
+        /** @var SQLite3Stmt $stmt */
         $stmt = Main::getDb()->prepare("INSERT INTO jails (jail_name, jail_bb, jail_level, jail_spawn, jail_member) values(:name, :bb, :level, :spawn, :member)");
         $stmt->bindParam("name", $name);
         $stmt->bindParam("bb", $axisAlignedBB);
@@ -65,9 +64,7 @@ class JailController
     public static function getJailById(int $id): ?Jail
     {
 
-        /**
-         * @var SQLite3Stmt $stmt
-         */
+        /** @var SQLite3Stmt $stmt */
         $stmt = Main::getDb()->prepare("SELECT * FROM jails WHERE jail_id = :id");
         $stmt->bindParam("id", $id);
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
@@ -77,9 +74,7 @@ class JailController
         $level = Server::getInstance()->getLevelByName($res["jail_level"]);
         $spawn = !is_null(json_decode($res["jail_spawn"], true)) ? Helper::arrayToVector(json_decode($res["jail_spawn"], true)) : null;
 
-        /**
-         * @var Chest|null $chest
-         */
+        /** @var Chest|null $chest */
         $chest = !is_null($res["jail_chest"]) ? $level->getTile(Helper::arrayToVector(json_decode($res["jail_chest"], true))) : null;
 
         return new Jail($res["jail_name"], unserialize($res["jail_bb"]), $level, $spawn, $res["jail_member"], $chest);
@@ -88,9 +83,7 @@ class JailController
     public static function getJailByName(string $name): ?Jail
     {
 
-        /**
-         * @var SQLite3Stmt $stmt
-         */
+        /** @var SQLite3Stmt $stmt */
         $stmt = Main::getDb()->prepare("SELECT * FROM jails WHERE lower(jail_name) = lower(:name)");
         $stmt->bindParam("name", $name);
 
@@ -100,9 +93,7 @@ class JailController
         $level = Server::getInstance()->getLevelByName($res["jail_level"]);
         $spawn = !is_null(json_decode($res["jail_spawn"], true)) ? Helper::arrayToVector(json_decode($res["jail_spawn"], true)) : null;
 
-        /**
-         * @var Chest|null $chest
-         */
+        /** @var Chest|null $chest */
         $chest = !is_null($res["jail_chest"]) ? $level->getTile(Helper::arrayToVector(json_decode($res["jail_chest"], true))) : null;
 
         return new Jail($res["jail_name"], unserialize($res["jail_bb"]), $level, $spawn, $res["jail_member"], $chest);
@@ -115,9 +106,7 @@ class JailController
     public static function getJails(): array
     {
 
-        /**
-         * @var SQLite3Stmt $stmt
-         */
+        /** @var SQLite3Stmt $stmt */
         $stmt = Main::getDb()->prepare("SELECT * FROM jails");
         $res = $stmt->execute();
 
@@ -131,17 +120,11 @@ class JailController
     /**
      * @param string $playerName
      * @return Jail|null
-     *
-     * TODO: Een manier vinden om dit efficiënter te maken!
-     *
-     * @see EventListener::onMove()
      */
     public static function getJailByMember(string $playerName): ?Jail
     {
 
-        /**
-         * @var SQLite3Stmt $stmt
-         */
+        /** @var SQLite3Stmt $stmt */
         $stmt = Main::getDb()->prepare("SELECT jail_id FROM jails WHERE lower(jail_member) = lower(:playername)");
         $stmt->bindParam("playername", $playerName);
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
