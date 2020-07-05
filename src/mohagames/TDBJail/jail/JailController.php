@@ -127,10 +127,11 @@ class JailController
         /** @var SQLite3Stmt $stmt */
         $stmt = Main::getDb()->prepare("SELECT jail_id FROM jails WHERE lower(jail_member) = lower(:playername)");
         $stmt->bindParam("playername", $playerName);
+
         $res = $stmt->execute()->fetchArray(SQLITE3_ASSOC);
         $stmt->close();
 
-        if (!isset($res["jail_id"])) return null;
+        if (!$res) return null;
 
         return self::getJailById($res["jail_id"]);
     }
