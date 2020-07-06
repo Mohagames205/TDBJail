@@ -13,7 +13,7 @@ class InventoryQueue
 {
 
     /**
-     * @var string[]
+     * @var array
      */
     public static $queue;
 
