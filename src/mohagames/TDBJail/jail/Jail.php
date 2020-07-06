@@ -4,6 +4,8 @@ namespace mohagames\TDBJail\jail;
 
 use mohagames\TDBJail\Main;
 use mohagames\TDBJail\util\Helper;
+use mohagames\TDBJail\util\InventoryHelper;
+use mohagames\TDBJail\util\InventoryQueue;
 use pocketmine\level\Level;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
@@ -161,15 +163,17 @@ class Jail
                 //lootChest logica alle items in de speler zijn inv moeten in de chest gezet worden.
                 $lootChest = $this->getLootChest();
 
-                /** @var Player $player */
                 $player = Server::getInstance()->getOfflinePlayer($member);
-                if(!is_null($lootChest))
+
+                if($player instanceof Player)
                 {
-                    if($lootChest->getInventory()->getSize() <= $player->getInventory()->getSize()) {
-                        $lootChest->getInventory()->setContents($player->getInventory()->getContents());
-                        $player->getInventory()->setContents([]);
-                    }
+                    if(!is_null($lootChest)) InventoryHelper::transferToInventory($player->getInventory(), $lootChest->getInventory());
                 }
+                else {
+                    if(!InventoryQueue::isQueued($this->getMember())) InventoryQueue::add($this->getMember());
+                }
+
+
                 return true;
             }
         }
@@ -181,15 +185,15 @@ class Jail
         //lootChest logica alle items moeten teruggegeven worden aan de gejailed speler
         $lootChest = $this->getLootChest();
 
-        /** @var Player $player */
         $player = Server::getInstance()->getOfflinePlayer($this->member);
-        if(!is_null($lootChest))
+        if($player instanceof Player)
         {
-            if($lootChest->getInventory()->getSize() >= $player->getInventory()->getSize()){
-                $player->getInventory()->setContents($lootChest->getInventory()->getContents());
-                $lootChest->getInventory()->setContents([]);
-            }
+            if(!is_null($lootChest)) InventoryHelper::transferToInventory($lootChest->getInventory(), $player->getInventory());
         }
+        else {
+            if(!InventoryQueue::isQueued($this->getMember())) InventoryQueue::add($this->getMember());
+        }
+
 
         $id = $this->getId();
         $this->member = null;
