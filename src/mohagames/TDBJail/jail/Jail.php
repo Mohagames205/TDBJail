@@ -4,7 +4,9 @@ namespace mohagames\TDBJail\jail;
 
 use mohagames\TDBJail\Main;
 use mohagames\TDBJail\util\Helper;
+use mohagames\TDBJail\util\InventoryHelper;
 use pocketmine\level\Level;
+use pocketmine\level\Position;
 use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\OfflinePlayer;
@@ -161,14 +163,11 @@ class Jail
                 //lootChest logica alle items in de speler zijn inv moeten in de chest gezet worden.
                 $lootChest = $this->getLootChest();
 
-                /** @var Player $player */
-                $player = Server::getInstance()->getOfflinePlayer($member);
                 if(!is_null($lootChest))
                 {
-                    if($lootChest->getInventory()->getSize() <= $player->getInventory()->getSize()) {
-                        $lootChest->getInventory()->setContents($player->getInventory()->getContents());
-                        $player->getInventory()->setContents([]);
-                    }
+                    $inv = InventoryHelper::getOfflinePlayerInventory($this->getMember(), Position::fromObject($this->getSpawn(), $this->getLevel()));
+                    InventoryHelper::transferToInventory($inv, $lootChest->getInventory());
+                    InventoryHelper::destroyFakeInventory($inv);
                 }
                 return true;
             }
@@ -181,14 +180,11 @@ class Jail
         //lootChest logica alle items moeten teruggegeven worden aan de gejailed speler
         $lootChest = $this->getLootChest();
 
-        /** @var Player $player */
-        $player = Server::getInstance()->getOfflinePlayer($this->member);
         if(!is_null($lootChest))
         {
-            if($lootChest->getInventory()->getSize() >= $player->getInventory()->getSize()){
-                $player->getInventory()->setContents($lootChest->getInventory()->getContents());
-                $lootChest->getInventory()->setContents([]);
-            }
+            $inv = InventoryHelper::getOfflinePlayerInventory($this->member, Position::fromObject($this->getSpawn(), $this->getLevel()));
+            InventoryHelper::transferToInventory($inv, $lootChest->getInventory());
+            InventoryHelper::destroyFakeInventory($inv);
         }
 
         $id = $this->getId();
