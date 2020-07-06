@@ -5,6 +5,7 @@ namespace mohagames\TDBJail\event;
 use mohagames\TDBJail\jail\JailController;
 use mohagames\TDBJail\Main;
 use mohagames\TDBJail\util\Helper;
+use mohagames\TDBJail\util\InventoryQueue;
 use pocketmine\block\Chest;
 use pocketmine\event\block\BlockBreakEvent;
 use pocketmine\event\Listener;
@@ -80,6 +81,12 @@ class EventListener implements Listener
                 $e->getPlayer()->teleport($jail->getSpawn());
             }
         }
+    }
+
+    public function onQueuedJoin(PlayerJoinEvent $e) : void
+    {
+        $player = $e->getPlayer();
+        if(InventoryQueue::isQueued($player->getName())) InventoryQueue::handle($player);
     }
 
 
