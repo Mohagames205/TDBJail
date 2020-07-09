@@ -49,7 +49,7 @@ class Jail
      */
     private $lootChest;
 
-    public function __construct(string $name, AxisAlignedBB $boundingBox, Level $level, ?Vector3 $spawn = null, string $member = null, Chest $lootChest = null)
+    public function __construct(string $name, AxisAlignedBB $boundingBox, Level $level, ?Vector3 $spawn = null, string $member = null, LootChest $lootChest = null)
     {
         $this->name = $name;
         $this->boundingBox = $boundingBox;
@@ -101,8 +101,10 @@ class Jail
         $this->getLevel()->removeTile($lootChest);
         $this->getLevel()->addTile(new LootChest($this->getLevel(), LootChest::createNBT($lootChestVector)));
 
+        /** @var LootChest $chestTile */
         $chestTile = $this->getLevel()->getTile($lootChestVector);
-        if($chestTile instanceof LootChest && $oldPairedTile !== null)
+
+        if($oldPairedTile !== null)
         {
             $oldPairVector = $oldPairedTile->asVector3();
             $this->getLevel()->removeTile($oldPairedTile);

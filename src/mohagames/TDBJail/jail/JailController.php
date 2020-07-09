@@ -4,6 +4,7 @@ namespace mohagames\TDBJail\jail;
 
 use mohagames\TDBJail\event\EventListener;
 use mohagames\TDBJail\Main;
+use mohagames\TDBJail\tile\LootChest;
 use mohagames\TDBJail\util\Helper;
 use pocketmine\level\Level;
 use pocketmine\level\Position;
@@ -74,7 +75,7 @@ class JailController
         $level = Server::getInstance()->getLevelByName($res["jail_level"]);
         $spawn = !is_null(json_decode($res["jail_spawn"], true)) ? Helper::arrayToVector(json_decode($res["jail_spawn"], true)) : null;
 
-        /** @var Chest|null $chest */
+        /** @var LootChest|null $chest */
         $chest = !is_null($res["jail_chest"]) ? $level->getTile(Helper::arrayToVector(json_decode($res["jail_chest"], true))) : null;
 
         return new Jail($res["jail_name"], unserialize($res["jail_bb"]), $level, $spawn, $res["jail_member"], $chest);
@@ -93,7 +94,7 @@ class JailController
         $level = Server::getInstance()->getLevelByName($res["jail_level"]);
         $spawn = !is_null(json_decode($res["jail_spawn"], true)) ? Helper::arrayToVector(json_decode($res["jail_spawn"], true)) : null;
 
-        /** @var Chest|null $chest */
+        /** @var LootChest|null $chest */
         $chest = !is_null($res["jail_chest"]) ? $level->getTile(Helper::arrayToVector(json_decode($res["jail_chest"], true))) : null;
 
         return new Jail($res["jail_name"], unserialize($res["jail_bb"]), $level, $spawn, $res["jail_member"], $chest);
