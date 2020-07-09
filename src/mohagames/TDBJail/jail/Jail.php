@@ -78,7 +78,7 @@ class Jail
         return $this->name;
     }
 
-    public function getLootChest() : ?Chest
+    public function getLootChest() : ?LootChest
     {
         return $this->lootChest;
     }
@@ -111,6 +111,7 @@ class Jail
             $chestTile->pairWith(new LootChest($this->getLevel(), LootChest::createNBT($oldPairVector)));
         }
 
+        /** @var LootChest $chestTile */
         $this->lootChest = $chestTile;
     }
 

@@ -14,6 +14,7 @@ use pocketmine\item\ItemFactory;
 use pocketmine\item\ItemIds;
 use pocketmine\level\Position;
 use pocketmine\math\Vector3;
+use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\OfflinePlayer;
 use pocketmine\Server;
 use pocketmine\tile\Chest;
@@ -40,9 +41,10 @@ class InventoryHelper
 
         $inventoryNBT = $playerNBT->getListTag("Inventory")->getValue();
         $items = [];
+
+        /** @var CompoundTag $itemsNBT */
         foreach ($inventoryNBT as $itemsNBT)
         {
-            var_dump($itemsNBT);
             $items[] = Item::nbtDeserialize($itemsNBT);
         }
 
