@@ -45,7 +45,7 @@ class Jail
     private $member;
 
     /**
-     * @var Chest
+     * @var LootChest
      */
     private $lootChest;
 
@@ -101,6 +101,7 @@ class Jail
         $this->getLevel()->removeTile($lootChest);
         $this->getLevel()->addTile(new LootChest($this->getLevel(), LootChest::createNBT($lootChestVector)));
 
+        /** @var LootChest $chestTile */
         $chestTile = $this->getLevel()->getTile($lootChestVector);
 
         if($oldPairedTile !== null)
@@ -176,15 +177,6 @@ class Jail
 
                 $this->setTime($time);
 
-                //lootChest logica alle items in de speler zijn inv moeten in de chest gezet worden.
-                $lootChest = $this->getLootChest();
-
-                if(!is_null($lootChest))
-                {
-                    $inv = InventoryHelper::getOfflinePlayerInventory($this->getMember(), Position::fromObject($this->getSpawn(), $this->getLevel()));
-                    InventoryHelper::transferToInventory($inv, $lootChest->getInventory());
-                    InventoryHelper::destroyFakeInventory($inv);
-                }
                 return true;
             }
         }
@@ -193,16 +185,6 @@ class Jail
 
     public function deleteMember() : bool
     {
-        //lootChest logica alle items moeten teruggegeven worden aan de gejailed speler
-        $lootChest = $this->getLootChest();
-
-        if(!is_null($lootChest))
-        {
-            $inv = InventoryHelper::getOfflinePlayerInventory($this->member, Position::fromObject($this->getSpawn(), $this->getLevel()));
-            InventoryHelper::transferToInventory($inv, $lootChest->getInventory());
-            InventoryHelper::destroyFakeInventory($inv);
-        }
-
         $id = $this->getId();
         $this->member = null;
 

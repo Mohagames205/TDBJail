@@ -33,7 +33,7 @@ class LootChest extends Chest
         return parent::onUpdate();
     }
 
-    private function initLayout()
+    private function initLayout() : void
     {
         $invisBedrock = Item::get(ItemIds::INVISIBLE_BEDROCK)->setCustomName("§cBARRIER");
         $invisBedrock->setNamedTagEntry(new IntTag("blockmove", 1));

@@ -24,7 +24,7 @@ class InventoryHelper
     /** @var Position $fakeInventoryPosition */
     private $fakeInventoryPosition;
 
-    public static function transferToInventory(Inventory $from, Inventory $to)
+    public static function transferToInventory(Inventory $from, Inventory $to) : void
     {
         if(count($from->getContents()) <= $to->getSize())
         {

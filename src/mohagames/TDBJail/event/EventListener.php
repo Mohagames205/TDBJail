@@ -66,7 +66,7 @@ class EventListener implements Listener
         }
     }
 
-    public function onTransaction(InventoryTransactionEvent $e)
+    public function onTransaction(InventoryTransactionEvent $e) : void
     {
         $transactions = $e->getTransaction()->getActions();
         foreach ($transactions as $action)
