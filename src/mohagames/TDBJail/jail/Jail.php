@@ -111,7 +111,7 @@ class Jail
             $chestTile->pairWith(new LootChest($this->getLevel(), LootChest::createNBT($oldPairVector)));
         }
 
-        /** @var LootChest $chestTile */
+        /** @var Chest $chestTile */
         $this->lootChest = $chestTile;
     }
 
