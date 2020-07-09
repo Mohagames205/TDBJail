@@ -3,6 +3,7 @@
 namespace mohagames\TDBJail\jail;
 
 use mohagames\TDBJail\Main;
+use mohagames\TDBJail\tile\LootChest;
 use mohagames\TDBJail\util\Helper;
 use mohagames\TDBJail\util\InventoryHelper;
 use pocketmine\level\Level;
@@ -94,7 +95,22 @@ class Jail
         $stmt->execute();
         $stmt->close();
 
-        $this->lootChest = $lootChest;
+        $lootChestVector = $lootChest->asVector3();
+        $oldPairedTile = $lootChest->getPair();
+
+        $this->getLevel()->removeTile($lootChest);
+        $this->getLevel()->addTile(new LootChest($this->getLevel(), LootChest::createNBT($lootChestVector)));
+
+        $chestTile = $this->getLevel()->getTile($lootChestVector);
+
+        if($oldPairedTile !== null)
+        {
+            $oldPairVector = $oldPairedTile->asVector3();
+            $this->getLevel()->removeTile($oldPairedTile);
+            $chestTile->pairWith(new LootChest($this->getLevel(), LootChest::createNBT($oldPairVector)));
+        }
+
+        $this->lootChest = $chestTile;
     }
 
     public function setSpawn(Vector3 $spawn) : void

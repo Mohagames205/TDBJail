@@ -9,6 +9,7 @@ use mohagames\TDBJail\form\JailForm;
 use mohagames\TDBJail\jail\Jail;
 use mohagames\TDBJail\jail\JailController;
 use mohagames\TDBJail\task\CheckJailedPlayerTask;
+use mohagames\TDBJail\tile\LootChest;
 use pocketmine\command\Command;
 use pocketmine\command\CommandSender;
 use pocketmine\item\ItemFactory;
@@ -17,6 +18,7 @@ use pocketmine\math\AxisAlignedBB;
 use pocketmine\math\Vector3;
 use pocketmine\Player;
 use pocketmine\plugin\PluginBase;
+use pocketmine\tile\Tile;
 use pocketmine\utils\Config;
 use pocketmine\utils\TextFormat;
 use SQLite3;
@@ -67,6 +69,12 @@ class Main extends PluginBase
         catch (\ErrorException $e)
         {
             $this->getLogger()->alert("Oops column 'jail_chest' bestaat al en hoeft niet aangemaakt te worden\n" . $e->getMessage());
+        }
+
+        try {
+            Tile::registerTile(LootChest::class, ["LootChest"]);
+        } catch (\ReflectionException $e) {
+            $this->getLogger()->error("LootChest tile could not be registered. The plugin will not work as expected.");
         }
 
         $config = new Config($this->getDataFolder() . "config.yml", Config::YAML, ["item_id" => ItemIds::GOLD_AXE, "lore" => "§cJailCreator"]);
