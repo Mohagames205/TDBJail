@@ -101,17 +101,14 @@ class Jail
         $this->getLevel()->removeTile($lootChest);
         $this->getLevel()->addTile(new LootChest($this->getLevel(), LootChest::createNBT($lootChestVector)));
 
-        /** @var LootChest $chestTile */
         $chestTile = $this->getLevel()->getTile($lootChestVector);
-
-        if($oldPairedTile !== null)
+        if($chestTile instanceof LootChest && $oldPairedTile !== null)
         {
             $oldPairVector = $oldPairedTile->asVector3();
             $this->getLevel()->removeTile($oldPairedTile);
             $chestTile->pairWith(new LootChest($this->getLevel(), LootChest::createNBT($oldPairVector)));
         }
 
-        /** @var Chest $chestTile */
         $this->lootChest = $chestTile;
     }
 
