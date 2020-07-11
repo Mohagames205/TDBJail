@@ -14,6 +14,7 @@ use pocketmine\OfflinePlayer;
 use pocketmine\Player;
 use pocketmine\Server;
 use pocketmine\tile\Chest;
+use pocketmine\tile\Tile;
 use SQLite3Stmt;
 
 class Jail
@@ -45,11 +46,11 @@ class Jail
     private $member;
 
     /**
-     * @var LootChest
+     * @var Chest
      */
     private $lootChest;
 
-    public function __construct(string $name, AxisAlignedBB $boundingBox, Level $level, ?Vector3 $spawn = null, string $member = null, LootChest $lootChest = null)
+    public function __construct(string $name, AxisAlignedBB $boundingBox, Level $level, ?Vector3 $spawn = null, string $member = null, Chest $lootChest = null)
     {
         $this->name = $name;
         $this->boundingBox = $boundingBox;
@@ -78,7 +79,7 @@ class Jail
         return $this->name;
     }
 
-    public function getLootChest() : ?LootChest
+    public function getLootChest() : Chest
     {
         return $this->lootChest;
     }
@@ -98,8 +99,11 @@ class Jail
         $lootChestVector = $lootChest->asVector3();
         $oldPairedTile = $lootChest->getPair();
 
+        /// tile1
         $this->getLevel()->removeTile($lootChest);
-        $this->getLevel()->addTile(new LootChest($this->getLevel(), LootChest::createNBT($lootChestVector)));
+        $tile = Tile::createTile("LootChest", $this->getLevel(), LootChest::createNBT($lootChestVector));
+        $this->getLevel()->addTile($tile);
+        ///
 
         /** @var LootChest $chestTile */
         $chestTile = $this->getLevel()->getTile($lootChestVector);
@@ -108,7 +112,9 @@ class Jail
         {
             $oldPairVector = $oldPairedTile->asVector3();
             $this->getLevel()->removeTile($oldPairedTile);
-            $chestTile->pairWith(new LootChest($this->getLevel(), LootChest::createNBT($oldPairVector)));
+            $chestTile->unpair();
+            $pairTile = Tile::createTile("LootChest", $this->getLevel(), LootChest::createNBT($oldPairVector));
+            $chestTile->pairWith($pairTile);
         }
 
         $this->lootChest = $chestTile;
